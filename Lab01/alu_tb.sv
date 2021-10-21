@@ -50,7 +50,7 @@ initial begin
     rst_n = 1'b1;
 	
 	@(negedge clk);    
-	alu_if.add(32'h00FFFFFF, 32'h00FFFFFF);
+	alu_if.add_op(32'h00FFFFFF, 32'h00FFFFFF);
 	
 end
 

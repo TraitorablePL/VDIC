@@ -18,7 +18,7 @@ function void init();
 endfunction
 
 function logic [3:0] crc_calc(input logic [67:0] d);
-
+	
 	logic [3:0] crc;
 
     crc[0] = d[66] ^ d[64] ^ d[63] ^ d[60] ^ d[56] ^ d[55] ^ d[54] ^ d[53] ^ d[51] ^ d[49] ^ d[48] ^ d[45] ^ d[41] ^ d[40] ^ d[39] ^ d[38] ^ d[36] ^ d[34] ^ d[33] ^ d[30] ^ d[26] ^ d[25] ^ d[24] ^ d[23] ^ d[21] ^ d[19] ^ d[18] ^ d[15] ^ d[11] ^ d[10] ^ d[9] ^ d[8] ^ d[6] ^ d[4] ^ d[3] ^ d[0] ^ 0 ^ 0;
@@ -29,7 +29,12 @@ function logic [3:0] crc_calc(input logic [67:0] d);
 	return crc;
 endfunction
 
-task data(input logic [7:0] _data);
+
+/**
+ * General tasks
+ */
+
+task tx_byte(input logic [7:0] _data);
 	
 	// START bit
 	@(negedge clk);
@@ -50,7 +55,15 @@ task data(input logic [7:0] _data);
 	sin = 1'b1;
 endtask
 
-task ctrl(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP);
+task tx_data(input logic [31:0] A);
+	
+	alu_if.tx_byte(A[31:24]);
+	alu_if.tx_byte(A[23:16]);
+	alu_if.tx_byte(A[15:8]);
+	alu_if.tx_byte(A[7:0]);
+endtask
+
+task tx_ctrl(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP);
 	
 	static logic [3:0] data_crc;
 	
@@ -87,22 +100,37 @@ task ctrl(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP);
 	sin = 1'b1;
 endtask
 
-task add(input logic [31:0] A, input logic [31:0] B);
+
+/**
+ * ALU operation tasks
+ */
+
+task and_op(input logic [31:0] A, input logic [31:0] B);
 	
-	logic [3:0] crc;
+	alu_if.tx_data(B[31:0]);
+	alu_if.tx_data(A[31:0]);
+	alu_if.tx_ctrl(A, B, 3'b000);
+endtask
+
+task or_op(input logic [31:0] A, input logic [31:0] B);
 	
-	alu_if.data(B[31:24]);
-	alu_if.data(B[23:16]);
-	alu_if.data(B[15:8]);
-	alu_if.data(B[7:0]);
+	alu_if.tx_data(B[31:0]);
+	alu_if.tx_data(A[31:0]);
+	alu_if.tx_ctrl(A, B, 3'b001);
+endtask
+
+task add_op(input logic [31:0] A, input logic [31:0] B);
 	
-	alu_if.data(A[31:24]);
-	alu_if.data(A[23:16]);
-	alu_if.data(A[15:8]);
-	alu_if.data(A[7:0]);
+	alu_if.tx_data(B[31:0]);
+	alu_if.tx_data(A[31:0]);
+	alu_if.tx_ctrl(A, B, 3'b100);
+endtask
+
+task sub_op(input logic [31:0] A, input logic [31:0] B);
 	
-	alu_if.ctrl(A, B, 3'b100);
-	
+	alu_if.tx_data(B[31:0]);
+	alu_if.tx_data(A[31:0]);
+	alu_if.tx_ctrl(A, B, 3'b101);
 endtask
 
 endinterface
