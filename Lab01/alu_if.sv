@@ -163,13 +163,13 @@ task _alu_op(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP, o
 	_tx_byte(A[7:0], DATA);
 	$display("A: 0x%08h", A);
 
-	crc = _crc_68({B,A,OP});
+	crc = _crc_68({B,A,1'b1,OP});
 	_tx_byte({1'b0, OP, crc}, CTL);
 	$display("CRC: %04b", crc);
 	
 	rsp_packet.data = 32'h00000000;
 	rsp_packet.flags = 6'b000000;
-	//_rx_rsp(rsp_packet);
+	_rx_rsp(rsp_packet);
 endtask
 
 /**

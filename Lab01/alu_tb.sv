@@ -47,6 +47,8 @@ initial begin
 	
 	A = 32'h000000FF;
 	B = 32'h000000FF;
+	C = 32'h00000000;
+	FLAGS = 6'b000000;
 	
 	alu_if.init();
 	rst_n = 1'b0;
@@ -55,11 +57,6 @@ initial begin
     rst_n = 1'b1;
 	
 	@(negedge clk);    
-	alu_if.add_op(A, B, C, FLAGS);
-	
-	A = 32'h00003422;
-	B = 32'h0022A45C;
-	
 	alu_if.add_op(A, B, C, FLAGS);
 	
 	$finish();
