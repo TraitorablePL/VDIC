@@ -13,7 +13,9 @@ logic clk;
 logic rst_n;
 logic sin;
 logic sout;
-
+logic [31:0] A, B, C;
+logic [5:0] FLAGS;
+	
 /**
  * Interfaces instantiation
  */ 
@@ -43,6 +45,9 @@ mtm_Alu mtm_Alu(
 
 initial begin
 	
+	A = 32'h000000FF;
+	B = 32'h000000FF;
+	
 	alu_if.init();
 	rst_n = 1'b0;
 	
@@ -50,8 +55,14 @@ initial begin
     rst_n = 1'b1;
 	
 	@(negedge clk);    
-	alu_if.add_op(32'h00FFFFFF, 32'h00FFFFFF);
+	alu_if.add_op(A, B, C, FLAGS);
 	
+	A = 32'h00003422;
+	B = 32'h0022A45C;
+	
+	alu_if.add_op(A, B, C, FLAGS);
+	
+	$finish();
 end
 
 /**
