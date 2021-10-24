@@ -38,15 +38,14 @@ mtm_Alu mtm_Alu(
 	.sin,
 	.sout
 );
+	
 
 /**
- * Test
+ * Tasks and function definitions
  */
-
-initial begin
+ 
+task tb_init();
 	
-	A = 32'h000000FF;
-	B = 32'h000000FF;
 	C = 32'h00000000;
 	FLAGS = 6'b000000;
 	
@@ -55,11 +54,46 @@ initial begin
 	
 	@(negedge clk);    
     rst_n = 1'b1;
+endtask
+
+
+/**
+ * Test
+ */
+
+initial begin
 	
-	@(negedge clk);    
-	alu_if.add_op(A, B, C, FLAGS);
+	tb_init();
 	
-	repeat (20) @(negedge clk);  
+	$display("\n --- AND OPERATION ---");
+	repeat (20) begin
+		A = $random();
+		B = $random();
+		alu_if.and_op(A, B, C, FLAGS);
+	end
+	
+	$display("\n --- OR OPERATION ---");
+	repeat (20) begin
+		A = $random();
+		B = $random();
+		alu_if.or_op(A, B, C, FLAGS);
+	end
+	
+	$display("\n --- ADD OPERATION ---");
+	repeat (20) begin
+		A = $random();
+		B = $random();
+		alu_if.add_op(A, B, C, FLAGS);
+	end
+	
+	$display("\n --- SUB OPERATION ---");
+	repeat (20) begin
+		A = $random();
+		B = $random();
+		alu_if.sub_op(A, B, C, FLAGS);
+	end
+	
+	repeat (10) @(negedge clk);  
 	
 	$finish();
 end
