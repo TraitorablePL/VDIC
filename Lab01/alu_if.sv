@@ -1,5 +1,5 @@
 
-//import alu_pkg::*;
+import alu_pkg::*;
 
 interface alu_if(
 	/* global signals */
@@ -47,69 +47,45 @@ endfunction
 
 task _tx_byte(input logic [7:0] data, input logic tx_type);
 
-//	if(tx_type)
-//		$display("TX CTL Byte Start %0t", $time);
-//	else
-//		$display("TX Data Byte Start %0t", $time);
-	
-	// START bit
+	/* START bit */
 	@(negedge clk);
 	sin = 1'b0;
 	
-	// TYPE bit
+	/* TYPE bit */
 	@(negedge clk);  
 	if(tx_type)
 		sin = 1'b1;
 	else
 		sin = 1'b0;
 	
-	// DATA bits
-	
+	/* DATA bits */
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
 		sin = data[i];
 	end
 	
-	// STOP bit
+	/* STOP bit */
 	@(negedge clk);
 	sin = 1'b1;
-	
-//	$display("TX Byte Stop %0t", $time);
 endtask
 
 
-task _rx_detect(output logic [7:0] data, output logic rx_type);
+task _rx_byte(output logic [7:0] data, output logic rx_type);
 	
-	// START and TYPE bits
+	/* START and TYPE bits */
 	repeat (2) @(negedge clk);
 	if(sout)
 		rx_type = CTL;
 	else
 		rx_type = DATA;
 	
-	// DATA bits
+	/* DATA bits */
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
 		data[i] = sout;
 	end
 	
-	// STOP bit
-	@(negedge clk);
-endtask
-
-
-task _rx_byte(output logic [7:0] data);
-
-	// START bit
-	repeat (2) @(negedge clk);
-	
-	// DATA bits
-	for(int i = 7;i >= 0; i--) begin
-		@(negedge clk);
-		data[i] = sout;
-	end
-	
-	// STOP bit
+	/* STOP bit */
 	@(negedge clk);
 endtask
 
@@ -120,34 +96,19 @@ task _rx_rsp(output rsp_t rsp_packet);
 	logic [7:0] data;
 	
 	@(negedge sout);
-//	$display("RX Detect Byte Start %0t", $time);
-	_rx_detect(data, rsp_type);
-//	$display("RX Detect Byte Stop 0x%02h at %0t", data, $time);
+	_rx_byte(rsp_packet.data[31:24], rsp_type);
 
 	if(rsp_type) begin
 		rsp_packet.data = 32'h00000000;
 		rsp_packet.flags = data[6:1];
 	end
 	else begin
-		rsp_packet.data[31:24] = data;
-//		$display("RX DATA 2 Start %0t", $time);
-		_rx_byte(data);
-		rsp_packet.data[23:16] = data;
-//		$display("RX DATA 2 Stop 0x%02h at %0t", data, $time);
-//		$display("RX DATA 3 Start %0t", $time);
-		_rx_byte(data);
-		rsp_packet.data[15:8] = data;
-//		$display("RX DATA 3 Stop 0x%02h at %0t", data, $time);
-//		$display("RX DATA 4 Start %0t", $time);
-		_rx_byte(data);
-		rsp_packet.data[7:0] = data;
-//		$display("RX DATA 4 Stop 0x%02h at %0t", data, $time);
-//		$display("RX FLAGS Start %0t", $time);
-		_rx_byte(data);
+		_rx_byte(rsp_packet.data[23:16], rsp_type);
+		_rx_byte(rsp_packet.data[15:8], rsp_type);
+		_rx_byte(rsp_packet.data[7:0], rsp_type);
+		_rx_byte(data, rsp_type);
 		rsp_packet.flags = {1'b0, data[6:3]};
-//		$display("RX FLAGS Stop %04b at %0t", data[6:3], $time);
 		// TODO ASSERT CRC CALC with CRC_37 from data[3:0];
-		
 	end
 endtask
 
