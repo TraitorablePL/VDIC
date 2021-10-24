@@ -80,8 +80,12 @@ endtask
 
 task _rx_detect(output logic [7:0] data, output logic rx_type);
 	
-	// START bit
+	// START and TYPE bits
 	repeat (2) @(negedge clk);
+	if(sout)
+		rx_type = CTL;
+	else
+		rx_type = DATA;
 	
 	// DATA bits
 	for(int i = 7;i >= 0; i--) begin
@@ -147,7 +151,7 @@ task _rx_rsp(output rsp_t rsp_packet);
 	end
 endtask
 
-task _alu_op(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP, output rsp_t rsp_packet);
+task _alu_op(input logic [31:0] A, input logic [31:0] B, input op_t OP, output rsp_t rsp_packet);
 
 	logic [3:0] crc;
 	

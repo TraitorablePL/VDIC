@@ -55,6 +55,11 @@ task tb_init();
     rst_n = 1'b1;
 endtask
 
+function logic tb_verify_result(input logic [31:0] A, input logic [31:0] B, input op_t OP, input rsp_t RSP);
+		
+	
+endfunction
+
 
 /**
  * Test
@@ -69,6 +74,7 @@ initial begin
 		A = $random();
 		B = $random();
 		alu_if.and_op(A, B, RSP);
+		
 	end
 	
 	$display("\n --- OR OPERATION ---");
