@@ -9,7 +9,9 @@ interface alu_if(
 	output logic 	sin,
 	input logic 	sout
 );
-	
+
+`define DEBUG
+
 enum bit [2:0] {AND_OP = 3'b000, OR_OP = 3'b001, ADD_OP = 3'b100, SUB_OP = 3'b101} OP;
 	
 enum bit {DATA, CTL} CMD_TYPE;
@@ -18,6 +20,8 @@ typedef struct {
 	logic [31:0] data;
 	logic [5:0] flags;
 } rsp_t;
+	
+
 	
 /**
  * Tasks and function definitions
@@ -53,11 +57,11 @@ endfunction
  */
 
 task _tx_byte(input logic [7:0] data, input logic tx_type);
-	
-	if(tx_type)
-		$display("TX CTL Byte Start %0t", $time);
-	else
-		$display("TX Data Byte Start %0t", $time);
+
+//	if(tx_type)
+//		$display("TX CTL Byte Start %0t", $time);
+//	else
+//		$display("TX Data Byte Start %0t", $time);
 	
 	// START bit
 	@(negedge clk);
@@ -81,7 +85,7 @@ task _tx_byte(input logic [7:0] data, input logic tx_type);
 	@(negedge clk);
 	sin = 1'b1;
 	
-	$display("TX Byte Stop %0t", $time);
+//	$display("TX Byte Stop %0t", $time);
 endtask
 
 
@@ -93,12 +97,11 @@ task _rx_detect(output logic [7:0] data, output logic rx_type);
 	// DATA bits
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
-		data[i] = sin;
+		data[i] = sout;
 	end
 	
 	// STOP bit
 	@(negedge clk);
-	sin = 1'b1;
 endtask
 
 
@@ -110,23 +113,23 @@ task _rx_byte(output logic [7:0] data);
 	// DATA bits
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
-		data[i] = sin;
+		data[i] = sout;
 	end
 	
 	// STOP bit
 	@(negedge clk);
-	sin = 1'b1;
-	
 endtask
 
 
-task _rx_rsp(rsp_t rsp_packet);
+task _rx_rsp(output rsp_t rsp_packet);
 	
 	logic rsp_type;
 	logic [7:0] data;
 	
 	@(negedge sout);
+//	$display("RX Detect Byte Start %0t", $time);
 	_rx_detect(data, rsp_type);
+//	$display("RX Detect Byte Stop 0x%02h at %0t", data, $time);
 
 	if(rsp_type) begin
 		rsp_packet.data = 32'h00000000;
@@ -134,16 +137,24 @@ task _rx_rsp(rsp_t rsp_packet);
 	end
 	else begin
 		rsp_packet.data[31:24] = data;
+//		$display("RX DATA 2 Start %0t", $time);
 		_rx_byte(data);
 		rsp_packet.data[23:16] = data;
+//		$display("RX DATA 2 Stop 0x%02h at %0t", data, $time);
+//		$display("RX DATA 3 Start %0t", $time);
 		_rx_byte(data);
 		rsp_packet.data[15:8] = data;
+//		$display("RX DATA 3 Stop 0x%02h at %0t", data, $time);
+//		$display("RX DATA 4 Start %0t", $time);
 		_rx_byte(data);
 		rsp_packet.data[7:0] = data;
+//		$display("RX DATA 4 Stop 0x%02h at %0t", data, $time);
+//		$display("RX FLAGS Start %0t", $time);
 		_rx_byte(data);
 		rsp_packet.flags = {1'b0, data[6:3]};
-
+//		$display("RX FLAGS Stop %04b at %0t", data[6:3], $time);
 		// TODO ASSERT CRC CALC with CRC_37 from data[3:0];
+		
 	end
 endtask
 
@@ -155,21 +166,23 @@ task _alu_op(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP, o
 	_tx_byte(B[23:16], DATA);
 	_tx_byte(B[15:8], DATA);
 	_tx_byte(B[7:0], DATA);
-	$display("B: 0x%08h", B);
+	$display("\n    B: 0x%08h", B);
 	
 	_tx_byte(A[31:24], DATA);
 	_tx_byte(A[23:16], DATA);
 	_tx_byte(A[15:8], DATA);
 	_tx_byte(A[7:0], DATA);
-	$display("A: 0x%08h", A);
+	$display("    A: 0x%08h", A);
 
 	crc = _crc_68({B,A,1'b1,OP});
 	_tx_byte({1'b0, OP, crc}, CTL);
-	$display("CRC: %04b", crc);
+	$display("  CRC: %04b", crc);
 	
 	rsp_packet.data = 32'h00000000;
 	rsp_packet.flags = 6'b000000;
 	_rx_rsp(rsp_packet);
+	$display("    C: 0x%08h", rsp_packet.data);
+	$display("FLAGS: 0x%06b", rsp_packet.flags);
 endtask
 
 /**

@@ -59,6 +59,8 @@ initial begin
 	@(negedge clk);    
 	alu_if.add_op(A, B, C, FLAGS);
 	
+	repeat (20) @(negedge clk);  
+	
 	$finish();
 end
 
