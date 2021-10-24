@@ -1,4 +1,5 @@
 
+//import alu_pkg::*;
 
 interface alu_if(
 	/* global signals */
@@ -9,25 +10,13 @@ interface alu_if(
 	output logic 	sin,
 	input logic 	sout
 );
-
-`define DEBUG
-
-enum bit [2:0] {AND_OP = 3'b000, OR_OP = 3'b001, ADD_OP = 3'b100, SUB_OP = 3'b101} OP;
 	
-enum bit {DATA, CTL} CMD_TYPE;
-
-typedef struct {
-	logic [31:0] data;
-	logic [5:0] flags;
-} rsp_t;
-	
-
 	
 /**
  * Tasks and function definitions
  */
 
-function logic [3:0] _crc_68(input logic [67:0] D);
+function logic [3:0] _crc4(input logic [67:0] D);
 	
 	logic [3:0] crc;
 
@@ -40,7 +29,7 @@ function logic [3:0] _crc_68(input logic [67:0] D);
 endfunction
 
 
-function logic [3:0] _crc_37(input logic [36:0] D);
+function logic [3:0] _crc3(input logic [36:0] D);
 	
 	logic [2:0] crc;
 
@@ -174,7 +163,7 @@ task _alu_op(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP, o
 	_tx_byte(A[7:0], DATA);
 	$display("    A: 0x%08h", A);
 
-	crc = _crc_68({B,A,1'b1,OP});
+	crc = _crc4({B,A,1'b1,OP});
 	_tx_byte({1'b0, OP, crc}, CTL);
 	$display("  CRC: %04b", crc);
 	
@@ -185,6 +174,7 @@ task _alu_op(input logic [31:0] A, input logic [31:0] B, input logic [2:0] OP, o
 	$display("FLAGS: 0x%06b", rsp_packet.flags);
 endtask
 
+
 /**
  * ALU external tasks and functions
  */
@@ -194,35 +184,24 @@ function void init();
 	sin = 1'b1;
 endfunction
 
-task and_op(input logic [31:0] A, input logic [31:0] B, output logic [32:0] C, output logic [5:0] FLAGS);
+task and_op(input logic [31:0] A, input logic [31:0] B, output rsp_t rsp_packet);
 	
-	rsp_t rsp_packet;
 	_alu_op(A, B, AND_OP, rsp_packet);
-	C = rsp_packet.data;
-	FLAGS = rsp_packet.flags;
 endtask
 
-task or_op(input logic [31:0] A, input logic [31:0] B, output logic [32:0] C, output logic [5:0] FLAGS);
-	
-	rsp_t rsp_packet;
+task or_op(input logic [31:0] A, input logic [31:0] B, output rsp_t rsp_packet);
+
 	_alu_op(A, B, OR_OP, rsp_packet);
-	C = rsp_packet.data;
-	FLAGS = rsp_packet.flags;
 endtask
 
-task add_op(input logic [31:0] A, input logic [31:0] B, output logic [32:0] C, output logic [5:0] FLAGS);
+task add_op(input logic [31:0] A, input logic [31:0] B, output rsp_t rsp_packet);
 	
-	rsp_t rsp_packet;
 	_alu_op(A, B, ADD_OP, rsp_packet);
-	C = rsp_packet.data;
-	FLAGS = rsp_packet.flags;
 endtask
 
-task sub_op(input logic [31:0] A, input logic [31:0] B, output logic [32:0] C, output logic [5:0] FLAGS);
-	rsp_t rsp_packet;
+task sub_op(input logic [31:0] A, input logic [31:0] B, output rsp_t rsp_packet);
+	
 	_alu_op(A, B, SUB_OP, rsp_packet);
-	C = rsp_packet.data;
-	FLAGS = rsp_packet.flags;
 endtask
 
 endinterface

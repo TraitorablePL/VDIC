@@ -3,6 +3,8 @@
 *******************************************************************************/
 `timescale 1ns / 1ps
 
+import alu_pkg::*;
+
 module alu_tb();
 
 /**
@@ -13,8 +15,8 @@ logic clk;
 logic rst_n;
 logic sin;
 logic sout;
-logic [31:0] A, B, C;
-logic [5:0] FLAGS;
+logic [31:0] A, B;
+rsp_t RSP;
 	
 /**
  * Interfaces instantiation
@@ -46,9 +48,6 @@ mtm_Alu mtm_Alu(
  
 task tb_init();
 	
-	C = 32'h00000000;
-	FLAGS = 6'b000000;
-	
 	alu_if.init();
 	rst_n = 1'b0;
 	
@@ -69,34 +68,35 @@ initial begin
 	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.and_op(A, B, C, FLAGS);
+		alu_if.and_op(A, B, RSP);
 	end
 	
 	$display("\n --- OR OPERATION ---");
 	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.or_op(A, B, C, FLAGS);
+		alu_if.or_op(A, B, RSP);
 	end
 	
 	$display("\n --- ADD OPERATION ---");
 	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.add_op(A, B, C, FLAGS);
+		alu_if.add_op(A, B, RSP);
 	end
 	
 	$display("\n --- SUB OPERATION ---");
 	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.sub_op(A, B, C, FLAGS);
+		alu_if.sub_op(A, B, RSP);
 	end
 	
 	repeat (10) @(negedge clk);  
 	
 	$finish();
 end
+
 
 /**
  * Clock generation
