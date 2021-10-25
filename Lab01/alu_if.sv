@@ -108,14 +108,14 @@ task _rx_rsp(output rsp_t rsp_packet);
 		_rx_byte(rsp_packet.data[15:8], rsp_type);
 		_rx_byte(rsp_packet.data[7:0], rsp_type);
 		_rx_byte(data, rsp_type);
-		rsp_packet.flags = {1'b0, data[6:3]};
-		// TODO ASSERT CRC CALC with CRC_37 from data[3:0];
+		rsp_packet.flags = {2'b00, data[6:3]};
+		assert (data[2:0] == _crc3({rsp_packet.data, 1'b0, data[6:3]})) else $error("Invalid CRC3 of data");
 	end
 endtask
 
 task _alu_op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
 	output rsp_t rsp_packet,
 	input logic CRC_ERR,
@@ -174,40 +174,40 @@ function void init();
 endfunction
 
 task and_op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	output rsp_t rsp_packet);
 	
 	_alu_op(A, B, AND_OP, rsp_packet, 0, 0, 0);
 endtask
 
 task or_op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	output rsp_t rsp_packet);
 
 	_alu_op(A, B, OR_OP, rsp_packet, 0, 0, 0);
 endtask
 
 task add_op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	output rsp_t rsp_packet);
 	
 	_alu_op(A, B, ADD_OP, rsp_packet, 0, 0, 0);
 endtask
 
 task sub_op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	output rsp_t rsp_packet);
 	
 	_alu_op(A, B, SUB_OP, rsp_packet, 0, 0, 0);
 endtask
 
 task op(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
 	output rsp_t rsp_packet,
 	input logic CRC_ERR,

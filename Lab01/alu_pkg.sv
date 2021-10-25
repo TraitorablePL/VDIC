@@ -5,7 +5,7 @@ package alu_pkg;
 	typedef enum bit {DATA, CTL} cmd_t;
 
 	typedef struct {
-		logic [31:0] data;
+		logic signed [31:0] data;
 		logic [5:0] flags;
 	} rsp_t;
 	

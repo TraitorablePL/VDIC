@@ -15,7 +15,7 @@ logic clk;
 logic rst_n;
 logic sin;
 logic sout;
-logic [31:0] A, B;
+logic signed [31:0] A, B;
 rsp_t RSP;
 	
 /**
@@ -45,7 +45,7 @@ mtm_Alu mtm_Alu(
  * Tasks and function definitions
  */
  
-task tb_init();
+task init();
 	
 	alu_if.init();
 	rst_n = 1'b0;
@@ -54,16 +54,16 @@ task tb_init();
     rst_n = 1'b1;
 endtask
 
-task tb_verify_result(
-	input logic [31:0] A, 
-	input logic [31:0] B, 
+task verify_result(
+	input logic signed [31:0] A, 
+	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
 	input rsp_t RSP,
 	input logic CRC_ERR,
 	input logic DATA_ERR,
 	input logic OP_ERR);
 	
-	logic [31:0] EXP_C = 32'h00000000;
+	logic signed [31:0] EXP_C = 32'h00000000;
 	
 	case(OP)
 		AND_OP:		EXP_C = B & A;
@@ -88,63 +88,63 @@ endtask
 
 initial begin
 	
-	tb_init();
-//	
-//	$display("\n --- AND OPERATION ---");
-//	repeat (20) begin
-//		A = $random();
-//		B = $random();
-//		alu_if.and_op(A, B, RSP);
-//		tb_verify_result(A, B, AND_OP, RSP);
-//	end
-//	
-//	$display("\n --- OR OPERATION ---");
-//	repeat (20) begin
-//		A = $random();
-//		B = $random();
-//		alu_if.or_op(A, B, RSP);
-//		tb_verify_result(A, B, OR_OP, RSP);
-//	end
-//	
-//	$display("\n --- ADD OPERATION ---");
-//	repeat (20) begin
-//		A = $random();
-//		B = $random();
-//		alu_if.add_op(A, B, RSP);
-//		tb_verify_result(A, B, ADD_OP, RSP);
-//	end
+	init();
+	
+	$display("\n --- AND OPERATION ---");
+	repeat (10) begin
+		A = $random();
+		B = $random();
+		alu_if.and_op(A, B, RSP);
+		verify_result(A, B, AND_OP, RSP, 0, 0, 0);
+	end
+	
+	$display("\n --- OR OPERATION ---");
+	repeat (10) begin
+		A = $random();
+		B = $random();
+		alu_if.or_op(A, B, RSP);
+		verify_result(A, B, OR_OP, RSP, 0, 0, 0);
+	end
+	
+	$display("\n --- ADD OPERATION ---");
+	repeat (10) begin
+		A = $random();
+		B = $random();
+		alu_if.add_op(A, B, RSP);
+		verify_result(A, B, ADD_OP, RSP, 0, 0, 0);
+	end
+	
+	$display("\n --- SUB OPERATION ---");
+	repeat (10) begin
+		A = $random();
+		B = $random();
+		alu_if.sub_op(A, B, RSP);
+		verify_result(A, B, SUB_OP, RSP, 0, 0, 0);
+	end
 
 	$display("\n --- INVALID OPERATION ---");
 	A = $random();
 	B = $random();
 	alu_if.op(A, B, 3'b111, RSP, 0, 0, 0);
-	tb_verify_result(A, B, 3'b111, RSP, 0, 0, 1);
+	verify_result(A, B, 3'b111, RSP, 0, 0, 1);
 	
 	$display("\n --- INVALID PKG FORMAT ---");
 	A = $random();
 	B = $random();
 	alu_if.op(A, B, ADD_OP, RSP, 0, 1, 0);
-	tb_verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
+	verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
 	
 	$display("\n --- INVALID BIT ---");
 	A = $random();
 	B = $random();
 	alu_if.op(A, B, ADD_OP, RSP, 0, 0, 1);
-	tb_verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
+	verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
 	
 	$display("\n --- INVALID CRC ---");
 	A = $random();
 	B = $random();
 	alu_if.op(A, B, ADD_OP, RSP, 1, 0, 0);
-	tb_verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
-	
-	$display("\n --- SUB OPERATION ---");
-	repeat (5) begin
-		A = $random();
-		B = $random();
-		alu_if.sub_op(A, B, RSP);
-		tb_verify_result(A, B, SUB_OP, RSP, 0, 0, 0);
-	end
+	verify_result(A, B, ADD_OP, RSP, 1, 0, 0);
 	
 	repeat (10) @(negedge clk);  
 	
