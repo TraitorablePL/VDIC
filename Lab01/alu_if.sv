@@ -122,6 +122,8 @@ task _alu_op(
 
 	logic [3:0] crc;
 	
+	
+	
 	$display("\n|         OP: 0x%03b", OP);
 	
 	_tx_byte(B[31:24], DATA);
@@ -142,9 +144,7 @@ task _alu_op(
 
 	crc = _crc4({B,A,1'b1,OP});
 	
-	if(ERROR == F_ERROP)
-		_tx_byte({1'b0, 3'b111, crc}, CTL);
-	else if(ERROR == F_ERRCRC)
+	if(ERROR == F_ERRCRC)
 		_tx_byte({1'b0, OP, crc[3:1],~crc[0]}, CTL);
 	else
 		_tx_byte({1'b0, OP, crc}, CTL);
@@ -167,50 +167,14 @@ function void init();
 	sin = 1'b1;
 endfunction
 
-task and_op(
+task op(
 	input logic signed [31:0] A, 
-	input logic signed [31:0] B,
+	input logic signed [31:0] B, 
+	input logic [2:0] OP, 
 	input err_t ERROR,
 	output rsp_t rsp_packet);
 	
-	_alu_op(A, B, AND_OP, rsp_packet, ERROR);
+	_alu_op(A, B, OP, rsp_packet, ERROR);
 endtask
-
-task or_op(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B,
-	input err_t ERROR,
-	output rsp_t rsp_packet);
-
-	_alu_op(A, B, OR_OP, rsp_packet, ERROR);
-endtask
-
-task add_op(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B,
-	input err_t ERROR,
-	output rsp_t rsp_packet);
-	
-	_alu_op(A, B, ADD_OP, rsp_packet, ERROR);
-endtask
-
-task sub_op(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B,
-	input err_t ERROR,
-	output rsp_t rsp_packet);
-	
-	_alu_op(A, B, SUB_OP, rsp_packet, ERROR);
-endtask
-
-//task op(
-//	input logic signed [31:0] A, 
-//	input logic signed [31:0] B, 
-//	input logic [2:0] OP, 
-//	input err_t ERROR,
-//	output rsp_t rsp_packet);
-//	
-//	_alu_op(A, B, OP, rsp_packet, ERROR);
-//endtask
 
 endinterface

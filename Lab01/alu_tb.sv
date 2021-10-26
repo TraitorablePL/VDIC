@@ -10,7 +10,7 @@ module alu_tb();
 /**
  * Local variables and signals
  */
-
+static int total, passed;
 logic clk;
 logic rst_n;
 logic sin;
@@ -63,7 +63,9 @@ task verify_result(
 	
 	logic signed [31:0] RESULT;
 	logic [32:0] RESULT_CARRY;
-	logic [3:0] ALU_FLAGS = F_NONE;
+	logic [3:0] ALU_FLAGS;
+	
+	ALU_FLAGS = F_NONE;
 	
 	case(OP)
 		AND_OP:	begin
@@ -77,10 +79,18 @@ task verify_result(
 		ADD_OP: begin
 			RESULT = B + A;
 			RESULT_CARRY = {1'b0, B} + {1'b0, A};
+			
+			if((A[31] == 1'b0 && B[31] == 1'b0 && RESULT[31] == 1'b1) || 
+				(A[31] == 1'b1 && B[31] == 1'b1 && RESULT[31] == 1'b0))
+				ALU_FLAGS |= F_OVFL;
 		end
 		SUB_OP: begin
 			RESULT = B - A;
 			RESULT_CARRY = {1'b0, B} - {1'b0, A};
+			
+			if((A[31] == 1'b1 && B[31] == 1'b0 && RESULT[31] == 1'b1) || 
+				(A[31] == 1'b0 && B[31] == 1'b1 && RESULT[31] == 1'b0))
+				ALU_FLAGS |= F_OVFL;
 		end
 		default: begin
 			RESULT = 32'h00000000;
@@ -91,10 +101,6 @@ task verify_result(
 	
 	if(RESULT_CARRY[32] == 1'b1) 
 		ALU_FLAGS |= F_CARRY;
-	
-	if((A[31] == 1'b0 && B[31] == 1'b0 && RESULT[31] == 1'b1) || 
-		(A[31] == 1'b1 && B[31] == 1'b1 && RESULT[31] == 1'b0))
-		ALU_FLAGS |= F_OVFL;
 	
 	if(RESULT < 0)
 		ALU_FLAGS |= F_NEG;
@@ -109,10 +115,16 @@ task verify_result(
 	else
 		$display("|  FLAGS_EXP: %06b", ALU_FLAGS);
 	
-	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || RSP.flags[5:3] == ERROR)
+	total++;
+	
+	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || 
+		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE) begin
 		$display("|\n ------> TEST PASSED <------\n\n");
-	else
+		passed++;
+	end
+	else begin
 		$display("|\n ------> TEST FAILED <------\n\n");
+	end
 endtask
 
 
@@ -125,55 +137,60 @@ initial begin
 	init();
 	
 	$display("\n --- AND OPERATION ---");
-	repeat (10) begin
+	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.and_op(A, B, F_ERRNONE, RSP);
+		alu_if.op(A, B, AND_OP, F_ERRNONE, RSP);
 		verify_result(A, B, AND_OP, F_ERRNONE, RSP);
 	end
 	
 	$display("\n --- OR OPERATION ---");
-	repeat (10) begin
+	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.or_op(A, B, F_ERRNONE, RSP);
+		alu_if.op(A, B, OR_OP, F_ERRNONE, RSP);
 		verify_result(A, B, OR_OP, F_ERRNONE, RSP);
 	end
 	
 	$display("\n --- ADD OPERATION ---");
-	repeat (10) begin
+	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.add_op(A, B, F_ERRNONE, RSP);
+		alu_if.op(A, B, ADD_OP, F_ERRNONE, RSP);
 		verify_result(A, B, ADD_OP, F_ERRNONE, RSP);
 	end
 	
 	$display("\n --- SUB OPERATION ---");
-	repeat (10) begin
+	repeat (20) begin
 		A = $random();
 		B = $random();
-		alu_if.sub_op(A, B, F_ERRNONE, RSP);
+		alu_if.op(A, B, SUB_OP, F_ERRNONE, RSP);
 		verify_result(A, B, SUB_OP, F_ERRNONE, RSP);
 	end
 
 	$display("\n --- INVALID OPERATION ---");
 	A = $random();
 	B = $random();
-	alu_if.add_op(A, B, F_ERROP, RSP);
-	verify_result(A, B, ADD_OP, F_ERROP, RSP);
+	alu_if.op(A, B, 3'b111, F_ERROP, RSP);
+	verify_result(A, B, 3'b111, F_ERROP, RSP);
 	
 	$display("\n --- INVALID PKG FORMAT ---");
 	A = $random();
 	B = $random();
-	alu_if.add_op(A, B, F_ERRDATA, RSP);
+	alu_if.op(A, B, ADD_OP, F_ERRDATA, RSP);
 	verify_result(A, B, ADD_OP, F_ERRDATA, RSP);
 	
 	$display("\n --- INVALID CRC ---");
 	A = $random();
 	B = $random();
-	alu_if.add_op(A, B, F_ERRCRC, RSP);
+	alu_if.op(A, B, ADD_OP, F_ERRCRC, RSP);
 	verify_result(A, B, ADD_OP, F_ERRCRC, RSP);
 	
+	$display("\n ------> SUMMARY <------\n\n");
+	$display("      TOTAL: %0d ", total);
+	$display("     PASSED: %0d ", passed);
+	$display("     FAILED: %0d \n\n", total-passed);
+		
 	repeat (10) @(negedge clk);  
 	
 	$finish();
