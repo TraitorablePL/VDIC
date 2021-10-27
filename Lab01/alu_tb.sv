@@ -6,16 +6,25 @@
 import alu_pkg::*;
 
 module alu_tb();
+	
+`define DEBUG
 
 /**
  * Local variables and signals
  */
-static int total, passed;
+
 logic clk;
 logic rst_n;
 logic sin;
 logic sout;
 logic signed [31:0] A, B;
+
+logic [4:0] err_gen;
+logic [2:0] err_in;
+logic [1:0] op_gen;
+logic [2:0] op_in;
+logic [2:0] data_gen;
+	
 rsp_t RSP;
 	
 /**
@@ -44,15 +53,6 @@ mtm_Alu mtm_Alu(
 /**
  * Tasks and function definitions
  */
- 
-task init();
-	
-	alu_if.init();
-	rst_n = 1'b0;
-	
-	@(negedge clk);    
-    rst_n = 1'b1;
-endtask
 
 task verify_result(
 	input logic signed [31:0] A, 
@@ -95,7 +95,6 @@ task verify_result(
 		default: begin
 			RESULT = 32'h00000000;
 			RESULT_CARRY = 33'h000000000;
-			$display("|  OP NOT SUPPORTED");
 		end
 	endcase
 	
@@ -108,104 +107,82 @@ task verify_result(
 	if(RESULT == 0)
 		ALU_FLAGS |= F_ZERO;
 	
+`ifdef DEBUG
+	$display("\n|         OP: %03b", OP);
+	$display("|          B: 0x%08h", B);
+	$display("|          A: 0x%08h", A);
+	$display("|          C: 0x%08h", RSP.data);
+	$display("|      FLAGS: %06b", RSP.flags);
 	$display("|      C_EXP: 0x%08h", RESULT);
 	
 	if(ERROR)
 		$display("|      ERROR: %06b", {ERROR, ERROR});
 	else
 		$display("|  FLAGS_EXP: %06b", ALU_FLAGS);
-	
-	total++;
+`endif
 	
 	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || 
-		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE) begin
-		$display("|\n ------> TEST PASSED <------\n\n");
-		passed++;
-	end
-	else begin
-		$display("|\n ------> TEST FAILED <------\n\n");
-	end
+		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE)
+		$display("TEST PASSED");
+	else
+		$display("TEST FAILED");
 endtask
 
+function logic signed [31:0] gen_data();
+	data_gen = $urandom() % 8;
+	case (data_gen)
+		0: return 32'h00000000;
+		1: return 32'hFFFFFFFF;
+		2: return 32'h80000000;
+		3: return 32'h7FFFFFFF;
+		default: return $random;
+	endcase
+endfunction
 
 /**
  * Test
  */
 
-initial begin
+initial begin : tester
 	
-	init();
+	alu_if.rst();
 	
-	$display("\n --- AND OPERATION ---");
-	repeat (20) begin
-		A = $random();
-		B = $random();
-		alu_if.op(A, B, AND_OP, F_ERRNONE, RSP);
-		verify_result(A, B, AND_OP, F_ERRNONE, RSP);
-	end
-	
-	$display("\n --- OR OPERATION ---");
-	repeat (20) begin
-		A = $random();
-		B = $random();
-		alu_if.op(A, B, OR_OP, F_ERRNONE, RSP);
-		verify_result(A, B, OR_OP, F_ERRNONE, RSP);
-	end
-	
-	$display("\n --- ADD OPERATION ---");
-	repeat (20) begin
-		A = $random();
-		B = $random();
-		alu_if.op(A, B, ADD_OP, F_ERRNONE, RSP);
-		verify_result(A, B, ADD_OP, F_ERRNONE, RSP);
-	end
-	
-	$display("\n --- SUB OPERATION ---");
-	repeat (20) begin
-		A = $random();
-		B = $random();
-		alu_if.op(A, B, SUB_OP, F_ERRNONE, RSP);
-		verify_result(A, B, SUB_OP, F_ERRNONE, RSP);
-	end
-
-	$display("\n --- INVALID OPERATION ---");
-	A = $random();
-	B = $random();
-	alu_if.op(A, B, 3'b111, F_ERROP, RSP);
-	verify_result(A, B, 3'b111, F_ERROP, RSP);
-	
-	$display("\n --- INVALID PKG FORMAT ---");
-	A = $random();
-	B = $random();
-	alu_if.op(A, B, ADD_OP, F_ERRDATA, RSP);
-	verify_result(A, B, ADD_OP, F_ERRDATA, RSP);
-	
-	$display("\n --- INVALID CRC ---");
-	A = $random();
-	B = $random();
-	alu_if.op(A, B, ADD_OP, F_ERRCRC, RSP);
-	verify_result(A, B, ADD_OP, F_ERRCRC, RSP);
-	
-	$display("\n ------> SUMMARY <------\n\n");
-	$display("      TOTAL: %0d ", total);
-	$display("     PASSED: %0d ", passed);
-	$display("     FAILED: %0d \n\n", total-passed);
+	repeat (10000) begin
+		err_gen = $urandom() % 64;
+		case (err_gen)
+			0: err_in = F_ERRCRC;
+			1: err_in = F_ERRDATA;
+			2: err_in = F_ERROP;
+			default: err_in = F_ERRNONE;
+		endcase
 		
+		op_gen = $urandom() % 4;
+		if (err_in == F_ERROP) begin
+			case (op_gen)
+				0: op_in = 3'b010;
+				1: op_in = 3'b011;
+				2: op_in = 3'b110;
+				3: op_in = 3'b111;
+			endcase
+		end
+		else begin
+			case (op_gen)
+				0: op_in = AND_OP;
+				1: op_in = OR_OP;
+				2: op_in = ADD_OP;
+				3: op_in = SUB_OP;
+			endcase
+		end
+		
+		A = gen_data();
+		B = gen_data();
+		
+		alu_if.op(A, B, op_in, err_in, RSP);
+		verify_result(A, B, op_in, err_in, RSP);
+	end
+	
 	repeat (10) @(negedge clk);  
-	
 	$finish();
-end
+end : tester
 
-
-/**
- * Clock generation
- */
- 
-initial begin
-	clk = 1'b1;
-	
-	forever
-		clk = #2.5 ~clk;
-end
-	
 endmodule

@@ -3,8 +3,8 @@ import alu_pkg::*;
 
 interface alu_if(
 	/* global signals */
-	input logic 	clk,
-	input logic 	rst_n,
+	output logic 	clk,
+	output logic 	rst_n,
 	
 	/* alu serial data */
 	output logic 	sin,
@@ -117,14 +117,10 @@ task _alu_op(
 	input logic signed [31:0] A, 
 	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
-	output rsp_t rsp_packet,
-	input err_t ERROR);
+	input logic [2:0] ERROR,
+	output rsp_t rsp_packet);
 
 	logic [3:0] crc;
-	
-	
-	
-	$display("\n|         OP: 0x%03b", OP);
 	
 	_tx_byte(B[31:24], DATA);
 	_tx_byte(B[23:16], DATA);
@@ -134,13 +130,10 @@ task _alu_op(
 	else
 		_tx_byte(B[7:0], DATA);
 	
-	$display("|          B: 0x%08h", B);
-	
 	_tx_byte(A[31:24], DATA);
 	_tx_byte(A[23:16], DATA);
 	_tx_byte(A[15:8], DATA);
 	_tx_byte(A[7:0], DATA);
-	$display("|          A: 0x%08h", A);
 
 	crc = _crc4({B,A,1'b1,OP});
 	
@@ -148,13 +141,10 @@ task _alu_op(
 		_tx_byte({1'b0, OP, crc[3:1],~crc[0]}, CTL);
 	else
 		_tx_byte({1'b0, OP, crc}, CTL);
-	$display("|        CRC: %04b", crc);
 	
 	rsp_packet.data = 32'h00000000;
 	rsp_packet.flags = 6'b000000;
 	_rx_rsp(rsp_packet);
-	$display("|          C: 0x%08h", rsp_packet.data);
-	$display("|      FLAGS: %06b", rsp_packet.flags);
 endtask
 
 
@@ -162,19 +152,33 @@ endtask
  * ALU external tasks and functions
  */
 
-function void init();
-
+task rst();
 	sin = 1'b1;
-endfunction
+	rst_n = 1'b0;
+	
+	@(negedge clk);    
+    rst_n = 1'b1;
+endtask
 
 task op(
 	input logic signed [31:0] A, 
 	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
-	input err_t ERROR,
+	input logic [2:0] ERROR,
 	output rsp_t rsp_packet);
 	
-	_alu_op(A, B, OP, rsp_packet, ERROR);
+	_alu_op(A, B, OP, ERROR, rsp_packet);
 endtask
+
+/**
+ * Clock generation
+ */
+ 
+initial begin
+	clk = 1'b1;
+	
+	forever
+		clk = #2.5 ~clk;
+end
 
 endinterface
