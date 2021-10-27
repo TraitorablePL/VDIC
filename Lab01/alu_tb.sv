@@ -7,7 +7,7 @@ import alu_pkg::*;
 
 module alu_tb();
 	
-`define DEBUG
+//`define DEBUG
 
 /**
  * Local variables and signals
@@ -27,6 +27,7 @@ logic [2:0] data_gen;
 	
 rsp_t RSP;
 	
+	
 /**
  * Interfaces instantiation
  */ 
@@ -37,6 +38,7 @@ alu_if alu_if(
 	.sin,
 	.sout
 );
+	
 	
 /**
  * Submodules placement
@@ -49,12 +51,12 @@ mtm_Alu mtm_Alu(
 	.sout
 );
 	
-
+	
 /**
- * Tasks and function definitions
+ * Test verifier
  */
 
-task verify_result(
+function logic verify_result(
 	input logic signed [31:0] A, 
 	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
@@ -122,12 +124,21 @@ task verify_result(
 `endif
 	
 	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || 
-		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE)
+		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE) begin
 		$display("TEST PASSED");
-	else
+		return 1'b0;
+	end
+	else begin
 		$display("TEST FAILED");
-endtask
+		return 1'b1;
+	end
+endfunction
 
+
+/**
+ * Data generator
+ */
+ 
 function logic signed [31:0] gen_data();
 	data_gen = $urandom() % 8;
 	case (data_gen)
@@ -139,46 +150,61 @@ function logic signed [31:0] gen_data();
 	endcase
 endfunction
 
+
 /**
- * Test
+ * Error generator
+ */
+ 
+function logic [2:0] gen_error();
+	err_gen = $urandom() % 64;
+	case (err_gen)
+		0: return F_ERRCRC;
+		1: return F_ERRDATA;
+		2: return F_ERROP;
+		default: return F_ERRNONE;
+	endcase
+endfunction
+
+
+/**
+ * Operation generator
+ */
+ 
+function logic [2:0] gen_op(input logic [2:0] err_in);
+	op_gen = $urandom() % 4;
+	if (err_in == F_ERROP) begin
+		case (op_gen)
+			0: op_in = 3'b010;
+			1: op_in = 3'b011;
+			2: op_in = 3'b110;
+			3: op_in = 3'b111;
+		endcase
+	end
+	else begin
+		case (op_gen)
+			0: op_in = AND_OP;
+			1: op_in = OR_OP;
+			2: op_in = ADD_OP;
+			3: op_in = SUB_OP;
+		endcase
+	end
+endfunction
+
+
+/**
+ * Tester
  */
 
 initial begin : tester
-	
 	alu_if.rst();
 	
 	repeat (10000) begin
-		err_gen = $urandom() % 64;
-		case (err_gen)
-			0: err_in = F_ERRCRC;
-			1: err_in = F_ERRDATA;
-			2: err_in = F_ERROP;
-			default: err_in = F_ERRNONE;
-		endcase
-		
-		op_gen = $urandom() % 4;
-		if (err_in == F_ERROP) begin
-			case (op_gen)
-				0: op_in = 3'b010;
-				1: op_in = 3'b011;
-				2: op_in = 3'b110;
-				3: op_in = 3'b111;
-			endcase
-		end
-		else begin
-			case (op_gen)
-				0: op_in = AND_OP;
-				1: op_in = OR_OP;
-				2: op_in = ADD_OP;
-				3: op_in = SUB_OP;
-			endcase
-		end
-		
+		err_in = gen_error();
+		op_in = gen_op(err_in);
 		A = gen_data();
 		B = gen_data();
-		
 		alu_if.op(A, B, op_in, err_in, RSP);
-		verify_result(A, B, op_in, err_in, RSP);
+		assert(verify_result(A, B, op_in, err_in, RSP) == 1'b0);
 	end
 	
 	repeat (10) @(negedge clk);  
