@@ -101,6 +101,7 @@ task _rx_rsp(output rsp_t rsp_packet);
 	if(rsp_type) begin
 		rsp_packet.data = 32'h00000000;
 		rsp_packet.flags = data[6:1];
+		assert(data[0] == 1'b1) else $error("Invalid parity of ctl");
 	end
 	else begin
 		rsp_packet.data[31:24] = data;
