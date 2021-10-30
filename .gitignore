@@ -1,0 +1,8 @@
+.settings
+INCA_libs*
+*.log
+*.history
+*.simvision
+*.shm
+*.key
+*.d
