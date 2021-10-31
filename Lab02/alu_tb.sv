@@ -199,11 +199,11 @@ covergroup op_cov;
 	
 	coverpoint op_in {
 		
-		bins A1_basic_op = {AND_OP, OR_OP, ADD_OP, SUB_OP};
+		bins A1_basic_op[] = {AND_OP, OR_OP, ADD_OP, SUB_OP};
 		
-		bins A1_error_op = {3'b010, 3'b011, 3'b110, 3'b111};
+		bins A1_error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
 		
-		bins A2_repeated_op = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
+		bins A2_repeated_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
 	}
 	
 endgroup
@@ -261,34 +261,34 @@ covergroup extreme_val_on_ops;
 
         bins B2_sub_ones = binsof (all_ops) intersect {SUB_OP} &&
         	(binsof (a_arg.ones) || binsof (b_arg.ones));
-	    
-	    // #B3 simulate max input for supported operations
 
-        bins B3_and_max = binsof (all_ops) intersect {AND_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_or_max = binsof (all_ops) intersect {OR_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_add_max = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_sub_max = binsof (all_ops) intersect {SUB_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-	    
-	    // #B4 simulate min input for supported operations
-
-        bins B2_and_min = binsof (all_ops) intersect {AND_OP} &&
-        	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_or_min = binsof (all_ops) intersect {OR_OP} &&
-        	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_add_min = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_sub_min = binsof (all_ops) intersect {SUB_OP} &&
-        	(binsof (a_arg.min) || binsof (b_arg.min));
+//	    // #B3 simulate max input for supported operations
+//
+//        bins B3_and_max = binsof (all_ops) intersect {AND_OP} &&
+//        	(binsof (a_arg.max) || binsof (b_arg.max));
+//
+//        bins B3_or_max = binsof (all_ops) intersect {OR_OP} &&
+//        	(binsof (a_arg.max) || binsof (b_arg.max));
+//
+//        bins B3_add_max = binsof (all_ops) intersect {ADD_OP} &&
+//        	(binsof (a_arg.max) || binsof (b_arg.max));
+//
+//        bins B3_sub_max = binsof (all_ops) intersect {SUB_OP} &&
+//        	(binsof (a_arg.max) || binsof (b_arg.max));
+//	    
+//	    // #B4 simulate min input for supported operations
+//
+//        bins B2_and_min = binsof (all_ops) intersect {AND_OP} &&
+//        	(binsof (a_arg.min) || binsof (b_arg.min));
+//
+//        bins B2_or_min = binsof (all_ops) intersect {OR_OP} &&
+//        	(binsof (a_arg.min) || binsof (b_arg.min));
+//
+//        bins B2_add_min = binsof (all_ops) intersect {ADD_OP} &&
+//        	(binsof (a_arg.min) || binsof (b_arg.min));
+//
+//        bins B2_sub_min = binsof (all_ops) intersect {SUB_OP} &&
+//        	(binsof (a_arg.min) || binsof (b_arg.min));
 
         ignore_bins others_only =
         	binsof(a_arg.others) && binsof(a_arg.others);
@@ -304,7 +304,7 @@ initial begin : coverage
     extreme_val_cov = new();
     forever begin : sample_cov
         @(posedge clk);
-        if(!rst_n) begin
+        if(rst_n) begin
             operation_cov.sample();
             extreme_val_cov.sample();
         end
