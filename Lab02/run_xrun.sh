@@ -9,7 +9,7 @@
 #               display the statistics
 
 # To set the paths for xrun and imc, execute the following command in the terminal:
-source /cad/env/cadence_path.XCELIUM1909
+# source /cad/env/cadence_path.XCELIUM1909
 
 # Help library if available with command:
 # cdnshelp &
