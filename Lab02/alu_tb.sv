@@ -15,7 +15,7 @@ logic clk;
 logic rst_n;
 logic sin;
 logic sout;
-logic signed [31:0] A, B;
+logic [31:0] A, B;
 
 logic [4:0] err_gen;
 logic [2:0] err_in;
@@ -23,6 +23,7 @@ logic [1:0] op_gen;
 logic [2:0] op_in;
 logic [3:0] data_gen;
 logic rep_op;
+logic rst_op;
 	
 rsp_t RSP;
 	
@@ -123,7 +124,7 @@ function logic verify_result(
 `endif
 	
 	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || 
-		RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE) begin
+		(RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE)) begin
 		$display("TEST PASSED\n");
 		return 1'b0;
 	end
@@ -139,7 +140,7 @@ endfunction
  */
  
 function logic signed [31:0] gen_data();
-	data_gen = $urandom() % 16;
+	data_gen = $urandom() % 32;
 	case (data_gen)
 		0: return 32'h00000000;
 		1: return 32'hFFFFFFFF;
@@ -204,6 +205,8 @@ covergroup op_cov;
 		bins A1_error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
 		
 		bins A2_repeated_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
+		
+		bins A3_reset_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
 	}
 	
 endgroup
@@ -217,19 +220,19 @@ covergroup extreme_val_on_ops;
 	}
 	
 	a_arg: coverpoint A {
-        bins zeros = {32'h00000000};
-		bins min = {32'h80000000};
-        bins others= {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
-		bins max  = {32'h7FFFFFFF};
-        bins ones  = {32'hFFFFFFFF};
+        bins zeros = {'h00000000};
+		bins min = {'h80000000};
+        bins others = {['h00000001:'h7FFFFFFE], ['h80000001:'hFFFFFFFE]};
+		bins max  = {'h7FFFFFFF};
+        bins ones  = {'hFFFFFFFF};
     }
 
     b_arg: coverpoint B {
-        bins zeros = {32'h00000000};
-		bins min = {32'h80000000};
-        bins others= {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
-		bins max  = {32'h7FFFFFFF};
-        bins ones  = {32'hFFFFFFFF};
+        bins zeros = {'h00000000};
+		bins min = {'h80000000};
+        bins others = {['h00000001:'h7FFFFFFE], ['h80000001:'hFFFFFFFE]};
+		bins max  = {'h7FFFFFFF};
+        bins ones  = {'hFFFFFFFF};
     }
     
     B_op_extreme_values: cross a_arg, b_arg, all_ops {
@@ -262,36 +265,36 @@ covergroup extreme_val_on_ops;
         bins B2_sub_ones = binsof (all_ops) intersect {SUB_OP} &&
         	(binsof (a_arg.ones) || binsof (b_arg.ones));
 
-//	    // #B3 simulate max input for supported operations
-//
-//        bins B3_and_max = binsof (all_ops) intersect {AND_OP} &&
-//        	(binsof (a_arg.max) || binsof (b_arg.max));
-//
-//        bins B3_or_max = binsof (all_ops) intersect {OR_OP} &&
-//        	(binsof (a_arg.max) || binsof (b_arg.max));
-//
-//        bins B3_add_max = binsof (all_ops) intersect {ADD_OP} &&
-//        	(binsof (a_arg.max) || binsof (b_arg.max));
-//
-//        bins B3_sub_max = binsof (all_ops) intersect {SUB_OP} &&
-//        	(binsof (a_arg.max) || binsof (b_arg.max));
-//	    
-//	    // #B4 simulate min input for supported operations
-//
-//        bins B2_and_min = binsof (all_ops) intersect {AND_OP} &&
-//        	(binsof (a_arg.min) || binsof (b_arg.min));
-//
-//        bins B2_or_min = binsof (all_ops) intersect {OR_OP} &&
-//        	(binsof (a_arg.min) || binsof (b_arg.min));
-//
-//        bins B2_add_min = binsof (all_ops) intersect {ADD_OP} &&
-//        	(binsof (a_arg.min) || binsof (b_arg.min));
-//
-//        bins B2_sub_min = binsof (all_ops) intersect {SUB_OP} &&
-//        	(binsof (a_arg.min) || binsof (b_arg.min));
+	    // #B3 simulate max input for supported operations
+
+        bins B3_and_max = binsof (all_ops) intersect {AND_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+
+        bins B3_or_max = binsof (all_ops) intersect {OR_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+
+        bins B3_add_max = binsof (all_ops) intersect {ADD_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+
+        bins B3_sub_max = binsof (all_ops) intersect {SUB_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+	    
+	    // #B4 simulate min input for supported operations
+
+        bins B2_and_min = binsof (all_ops) intersect {AND_OP} &&
+        	(binsof (a_arg.min) || binsof (b_arg.min));
+
+        bins B2_or_min = binsof (all_ops) intersect {OR_OP} &&
+        	(binsof (a_arg.min) || binsof (b_arg.min));
+
+        bins B2_add_min = binsof (all_ops) intersect {ADD_OP} &&
+        	(binsof (a_arg.min) || binsof (b_arg.min));
+
+        bins B2_sub_min = binsof (all_ops) intersect {SUB_OP} &&
+        	(binsof (a_arg.min) || binsof (b_arg.min));
 
         ignore_bins others_only =
-        	binsof(a_arg.others) && binsof(a_arg.others);
+        	binsof(a_arg.others) && binsof(b_arg.others);
     }
 	
 endgroup
@@ -319,11 +322,20 @@ initial begin : tester
 	alu_if.rst();
 	repeat (10000) begin
 		rep_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
+		rst_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		
 		err_in = gen_error();
 		op_in = gen_op(err_in);
 		A = gen_data();
 		B = gen_data();
+		
+		
+		if(rst_op == 1'b1) begin
+`ifdef DEBUG
+			$display("|  Reset before");
+`endif
+			alu_if.rst();
+		end
 		
 		alu_if.op(A, B, op_in, err_in, RSP);
 		assert(verify_result(A, B, op_in, err_in, RSP) == 1'b0);
