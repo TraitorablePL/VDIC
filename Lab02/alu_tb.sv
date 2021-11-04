@@ -7,7 +7,7 @@ import alu_pkg::*;
 
 module alu_tb();
 	
-`define DEBUG
+//`define DEBUG
 
 /**
  * Local variables and signals
@@ -185,9 +185,9 @@ covergroup op_cov;
 	option.name = "cg_op_cov";
 	
 	all_ops : coverpoint op_in {
-		bins A1_basic_op[] = {AND_OP, OR_OP, ADD_OP, SUB_OP};
-		bins A1_error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
-		bins A2_repeated_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
+		bins basic_op[] = {AND_OP, OR_OP, ADD_OP, SUB_OP};
+		bins error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
+		bins T12_repeated_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
 	}
 	
 	rst : coverpoint rst_op {
@@ -199,45 +199,42 @@ covergroup op_cov;
 		bins zero = {2'b00,F_ZERO};
 		bins ovfl = {2'b00,F_OVFL};
 		bins carry = {2'b00,F_CARRY};
-		bins errop = {F_ERROP,F_ERROP};
-		bins errcrc = {F_ERRCRC,F_ERRCRC};
-		bins errdata = {F_ERRDATA,F_ERRDATA};
+		bins T9_errcrc = {F_ERRCRC,F_ERRCRC};
+		bins T10_errdata = {F_ERRDATA,F_ERRDATA};
+		bins T11_errop = {F_ERROP,F_ERROP};
 	}
 	
-	A3_rst_op: cross all_ops, rst {
-    	bins A3_reset_and = binsof (all_ops) intersect {AND_OP} && binsof (rst.active);
-		bins A3_reset_or = binsof (all_ops) intersect {OR_OP} && binsof (rst.active);
-		bins A3_reset_add = binsof (all_ops) intersect {ADD_OP} && binsof (rst.active);
-		bins A3_reset_sub = binsof (all_ops) intersect {SUB_OP} && binsof (rst.active);
+	T13_rst_op: cross all_ops, rst {
+    	bins T13_reset_and = binsof (all_ops) intersect {AND_OP} && binsof (rst.active);
+		bins T13_reset_or = binsof (all_ops) intersect {OR_OP} && binsof (rst.active);
+		bins T13_reset_add = binsof (all_ops) intersect {ADD_OP} && binsof (rst.active);
+		bins T13_reset_sub = binsof (all_ops) intersect {SUB_OP} && binsof (rst.active);
 		
-		ignore_bins others_reset = binsof(all_ops.A1_error_op);
+		ignore_bins others_reset = binsof(all_ops.error_op);
 	}
 	
-	A4_flag_op: cross all_ops, flags {
-        bins A4_carry_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.carry);
-		bins A4_overflow_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.ovfl);
-		bins A4_negative_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.neg);
-		bins A4_zero_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.zero);
+	op_flags: cross all_ops, flags {
 		
-		bins A4_carry_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.carry);
-		bins A4_overflow_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.ovfl);
-		bins A4_negative_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.neg);
-		bins A4_zero_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.zero);
+        bins T5_carry_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.carry);
+		bins T5_carry_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.carry);
 		
-		bins A4_carry_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.carry);
-		bins A4_overflow_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.ovfl);
-		bins A4_negative_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.neg);
-		bins A4_zero_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.zero);
+		bins T6_overflow_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.ovfl);
+		bins T6_overflow_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.ovfl);
 		
-		bins A4_carry_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.carry);
-		bins A4_overflow_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.ovfl);
-		bins A4_negative_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.neg);
-		bins A4_zero_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.zero);
+		bins T7_negative_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.neg);
+		bins T7_negative_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.neg);
+		bins T7_negative_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.neg);
+		bins T7_negative_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.neg);
+		
+		bins T8_zero_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.zero);
+		bins T8_zero_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.zero);
+		bins T8_zero_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.zero);
+		bins T8_zero_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.zero);
 		
 		ignore_bins err_flags = binsof (all_ops) && 
-			(binsof (flags.errop) || binsof (flags.errcrc) || binsof (flags.errdata));
+			(binsof (flags.T11_errop) || binsof (flags.T9_errcrc) || binsof (flags.T10_errdata));
 		
-		ignore_bins others_flags = binsof(all_ops.A1_error_op);
+		ignore_bins others_flags = binsof(all_ops.error_op);
 	}
 endgroup
 
@@ -265,62 +262,46 @@ covergroup extreme_val_on_ops;
         bins ones  = {'hFFFFFFFF};
     }
     
-    B_op_extreme_values: cross a_arg, b_arg, all_ops {
+    Test_ops_extreme_values: cross a_arg, b_arg, all_ops {
 
-        // #B1 simulate zero input for supported operations
-
-    	bins B1_and_zeros = binsof (all_ops) intersect {AND_OP} &&
+        // T1: AND operation for random and extreme numbers
+    	bins T1_and_zeros = binsof (all_ops) intersect {AND_OP} &&
         	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
-
-        bins B1_or_zeros = binsof (all_ops) intersect {OR_OP} &&
-        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
-
-        bins B1_add_zeros = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
-
-        bins B1_sub_zeros = binsof (all_ops) intersect {SUB_OP} &&
-        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
-
-        // #B2 simulate ones input for supported operations
-
-        bins B2_and_ones = binsof (all_ops) intersect {AND_OP} &&
+	    bins T1_and_ones = binsof (all_ops) intersect {AND_OP} &&
         	(binsof (a_arg.ones) || binsof (b_arg.ones));
-
-        bins B2_or_ones = binsof (all_ops) intersect {OR_OP} &&
-        	(binsof (a_arg.ones) || binsof (b_arg.ones));
-
-        bins B2_add_ones = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.ones) || binsof (b_arg.ones));
-
-        bins B2_sub_ones = binsof (all_ops) intersect {SUB_OP} &&
-        	(binsof (a_arg.ones) || binsof (b_arg.ones));
-
-	    // #B3 simulate max input for supported operations
-
-        bins B3_and_max = binsof (all_ops) intersect {AND_OP} &&
+     	bins T1_and_max = binsof (all_ops) intersect {AND_OP} &&
         	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_or_max = binsof (all_ops) intersect {OR_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_add_max = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
-
-        bins B3_sub_max = binsof (all_ops) intersect {SUB_OP} &&
-        	(binsof (a_arg.max) || binsof (b_arg.max));
+	    bins T1_and_min = binsof (all_ops) intersect {AND_OP} &&
+        	(binsof (a_arg.min) || binsof (b_arg.min));
 	    
-	    // #B4 simulate min input for supported operations
-
-        bins B2_and_min = binsof (all_ops) intersect {AND_OP} &&
+	    // T2: OR operation for random and extreme numbers
+        bins T2_or_zeros = binsof (all_ops) intersect {OR_OP} &&
+        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
+        bins T2_or_ones = binsof (all_ops) intersect {OR_OP} &&
+        	(binsof (a_arg.ones) || binsof (b_arg.ones));
+        bins T2_or_max = binsof (all_ops) intersect {OR_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+      	bins T2_or_min = binsof (all_ops) intersect {OR_OP} &&
         	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_or_min = binsof (all_ops) intersect {OR_OP} &&
+	    
+	    // T3: ADD operation for random and extreme numbers
+        bins T3_add_zeros = binsof (all_ops) intersect {ADD_OP} &&
+        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
+      	bins T3_add_ones = binsof (all_ops) intersect {ADD_OP} &&
+        	(binsof (a_arg.ones) || binsof (b_arg.ones));
+      	bins T3_add_max = binsof (all_ops) intersect {ADD_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+        bins T3_add_min = binsof (all_ops) intersect {ADD_OP} &&
         	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_add_min = binsof (all_ops) intersect {ADD_OP} &&
-        	(binsof (a_arg.min) || binsof (b_arg.min));
-
-        bins B2_sub_min = binsof (all_ops) intersect {SUB_OP} &&
+	    
+	    // T4: SUB operation for random and extreme numbers
+        bins T4_sub_zeros = binsof (all_ops) intersect {SUB_OP} &&
+        	(binsof (a_arg.zeros) || binsof (b_arg.zeros));
+        bins T4_sub_ones = binsof (all_ops) intersect {SUB_OP} &&
+        	(binsof (a_arg.ones) || binsof (b_arg.ones));
+        bins T4_sub_max = binsof (all_ops) intersect {SUB_OP} &&
+        	(binsof (a_arg.max) || binsof (b_arg.max));
+        bins T4_sub_min = binsof (all_ops) intersect {SUB_OP} &&
         	(binsof (a_arg.min) || binsof (b_arg.min));
 
         ignore_bins others_only =
@@ -351,7 +332,7 @@ end : coverage
 initial begin : tester
 	alu_if.rst();
 	test_flag = 1'b0;
-	repeat (1000) begin
+	repeat (10000) begin
 		rep_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		rst_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		
@@ -398,7 +379,6 @@ initial begin : scoreboard
 `endif
 		end
 `ifdef DEBUG
-		$display("|         OP: %03b", op_in);
 		$display("|         OP: %03b", op_in);
 		$display("|          B: 0x%08h", B);
 		$display("|          A: 0x%08h", A);
