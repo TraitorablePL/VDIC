@@ -6,6 +6,8 @@
 import alu_pkg::*;
 
 module alu_tb();
+	
+`define DEBUG
 
 /**
  * Local variables and signals
@@ -24,6 +26,8 @@ logic [2:0] op_in;
 logic [3:0] data_gen;
 logic rep_op;
 logic rst_op;
+	
+bit test_flag;
 	
 rsp_t RSP;
 	
@@ -108,30 +112,12 @@ function logic verify_result(
 	
 	if(RESULT == 0)
 		ALU_FLAGS |= F_ZERO;
-	
-`ifdef DEBUG
-	$display("|         OP: %03b", OP);
-	$display("|          B: 0x%08h", B);
-	$display("|          A: 0x%08h", A);
-	$display("|          C: 0x%08h", RSP.data);
-	$display("|      FLAGS: %06b", RSP.flags);
-	$display("|      C_EXP: 0x%08h", RESULT);
-	
-	if(ERROR)
-		$display("|      ERROR: %06b", {ERROR, ERROR});
-	else
-		$display("|  FLAGS_EXP: %06b", ALU_FLAGS);
-`endif
-	
+
 	if((RSP.data == RESULT && RSP.flags[3:0] == ALU_FLAGS) || 
-		(RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE)) begin
-		$display("TEST PASSED\n");
+		(RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE))
 		return 1'b0;
-	end
-	else begin
-		$display("TEST FAILED\n");
+	else
 		return 1'b1;
-	end
 endfunction
 
 
@@ -364,7 +350,8 @@ end : coverage
 
 initial begin : tester
 	alu_if.rst();
-	repeat (10000) begin
+	test_flag = 1'b0;
+	repeat (1000) begin
 		rep_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		rst_op = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		
@@ -373,28 +360,54 @@ initial begin : tester
 		A = gen_data();
 		B = gen_data();
 		
-		
 		if(rst_op == 1'b1) begin
-`ifdef DEBUG
-			$display("|  Reset before");
-`endif
 			alu_if.rst();
 		end
 		
 		alu_if.op(A, B, op_in, err_in, RSP);
-		assert(verify_result(A, B, op_in, err_in, RSP) == 1'b0);
+		test_flag = 1'b1;
+		repeat(2) @(negedge clk);
 		
 		if(rep_op == 1'b1) begin
-`ifdef DEBUG
-			$display("|  Repeated operation");
-`endif
 			alu_if.op(A, B, op_in, err_in, RSP);
-			assert(verify_result(A, B, op_in, err_in, RSP) == 1'b0);
+			test_flag = 1'b1;
+			repeat(2) @(negedge clk);
 		end
 	end
 	
 	repeat (10) @(negedge clk);  
 	$finish();
 end : tester
+
+
+/**
+ * Scoreboard
+ */
+
+initial begin : scoreboard
+	forever begin
+		@(posedge test_flag);
+		assert(1'b0 == verify_result(A, B, op_in, err_in, RSP)) begin
+`ifdef DEBUG
+		$display("\nTEST PASSED");
+`endif
+		end 
+		else begin 
+`ifdef DEBUG
+		$warning("\nTEST FAILED");
+`endif
+		end
+`ifdef DEBUG
+		$display("|         OP: %03b", op_in);
+		$display("|         OP: %03b", op_in);
+		$display("|          B: 0x%08h", B);
+		$display("|          A: 0x%08h", A);
+		$display("|          C: 0x%08h", RSP.data);
+		$display("|      FLAGS: %06b", RSP.flags);
+`endif
+		@(posedge clk);
+		test_flag = 1'b0;
+	end
+end : scoreboard
 
 endmodule
