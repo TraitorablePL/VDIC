@@ -198,17 +198,61 @@ covergroup op_cov;
 	
 	option.name = "cg_op_cov";
 	
-	coverpoint op_in {
-		
+	all_ops : coverpoint op_in {
 		bins A1_basic_op[] = {AND_OP, OR_OP, ADD_OP, SUB_OP};
-		
 		bins A1_error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
-		
 		bins A2_repeated_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
-		
-		bins A3_reset_op[] = ({AND_OP, OR_OP, ADD_OP, SUB_OP} [* 2]);
 	}
 	
+	rst : coverpoint rst_op {
+		bins active = {1'b1};
+	}
+	
+	flags : coverpoint RSP.flags {
+		bins neg = {2'b00,F_NEG};
+		bins zero = {2'b00,F_ZERO};
+		bins ovfl = {2'b00,F_OVFL};
+		bins carry = {2'b00,F_CARRY};
+		bins errop = {F_ERROP,F_ERROP};
+		bins errcrc = {F_ERRCRC,F_ERRCRC};
+		bins errdata = {F_ERRDATA,F_ERRDATA};
+	}
+	
+	A3_rst_op: cross all_ops, rst {
+    	bins A3_reset_and = binsof (all_ops) intersect {AND_OP} && binsof (rst.active);
+		bins A3_reset_or = binsof (all_ops) intersect {OR_OP} && binsof (rst.active);
+		bins A3_reset_add = binsof (all_ops) intersect {ADD_OP} && binsof (rst.active);
+		bins A3_reset_sub = binsof (all_ops) intersect {SUB_OP} && binsof (rst.active);
+		
+		ignore_bins others_reset = binsof(all_ops.A1_error_op);
+	}
+	
+	A4_flag_op: cross all_ops, flags {
+        bins A4_carry_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.carry);
+		bins A4_overflow_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.ovfl);
+		bins A4_negative_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.neg);
+		bins A4_zero_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.zero);
+		
+		bins A4_carry_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.carry);
+		bins A4_overflow_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.ovfl);
+		bins A4_negative_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.neg);
+		bins A4_zero_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.zero);
+		
+		bins A4_carry_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.carry);
+		bins A4_overflow_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.ovfl);
+		bins A4_negative_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.neg);
+		bins A4_zero_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.zero);
+		
+		bins A4_carry_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.carry);
+		bins A4_overflow_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.ovfl);
+		bins A4_negative_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.neg);
+		bins A4_zero_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.zero);
+		
+		ignore_bins err_flags = binsof (all_ops) && 
+			(binsof (flags.errop) || binsof (flags.errcrc) || binsof (flags.errdata));
+		
+		ignore_bins others_flags = binsof(all_ops.A1_error_op);
+	}
 endgroup
 
 covergroup extreme_val_on_ops;
@@ -220,11 +264,11 @@ covergroup extreme_val_on_ops;
 	}
 	
 	a_arg: coverpoint A {
-        bins zeros = {'h00000000};
-		bins min = {'h80000000};
-        bins others = {['h00000001:'h7FFFFFFE], ['h80000001:'hFFFFFFFE]};
-		bins max  = {'h7FFFFFFF};
-        bins ones  = {'hFFFFFFFF};
+        bins zeros = {32'h00000000};
+		bins min = {32'h80000000};
+        bins others = {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
+		bins max  = {32'h7FFFFFFF};
+        bins ones  = {32'hFFFFFFFF};
     }
 
     b_arg: coverpoint B {
