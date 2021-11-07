@@ -25,6 +25,7 @@ logic rst_op;
 bit test_flag;
 	
 alu_result_t alu_result;
+exp_result_t exp_result;
 
 
 /**
@@ -125,14 +126,17 @@ covergroup op_cov;
 		bins active = {1'b1};
 	}
 	
-	flags : coverpoint alu_result.flags {
-		bins neg = {2'b00,F_NEG};
-		bins zero = {2'b00,F_ZERO};
-		bins ovfl = {2'b00,F_OVFL};
-		bins carry = {2'b00,F_CARRY};
-		bins T9_errcrc = {F_ERRCRC,F_ERRCRC};
-		bins T10_errdata = {F_ERRDATA,F_ERRDATA};
-		bins T11_errop = {F_ERROP,F_ERROP};
+	alu_flags : coverpoint exp_result.flags {
+		bins neg = {F_NEG};
+		bins zero = {F_ZERO};
+		bins ovfl = {F_OVFL};
+		bins carry = {F_CARRY};
+	}
+	
+	err_flags : coverpoint err_in {
+		bins T9_errcrc = {F_ERRCRC};
+		bins T10_errdata = {F_ERRDATA};
+		bins T11_errop = {F_ERROP};
 	}
 	
 	T13_rst_op: cross all_ops, rst {
@@ -144,28 +148,29 @@ covergroup op_cov;
 		ignore_bins others_reset = binsof(all_ops.error_op);
 	}
 	
-	op_flags: cross all_ops, flags {
+	op_flags: cross all_ops, alu_flags {
 		
-        bins T5_carry_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.carry);
-		bins T5_carry_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.carry);
+        bins T5_carry_add = binsof (all_ops) intersect {ADD_OP} && binsof (alu_flags.carry);
+		bins T5_carry_sub = binsof (all_ops) intersect {SUB_OP} && binsof (alu_flags.carry);
 		
-		bins T6_overflow_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.ovfl);
-		bins T6_overflow_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.ovfl);
+		bins T6_overflow_add = binsof (all_ops) intersect {ADD_OP} && binsof (alu_flags.ovfl);
+		bins T6_overflow_sub = binsof (all_ops) intersect {SUB_OP} && binsof (alu_flags.ovfl);
 		
-		bins T7_negative_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.neg);
-		bins T7_negative_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.neg);
-		bins T7_negative_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.neg);
-		bins T7_negative_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.neg);
+		bins T7_negative_add = binsof (all_ops) intersect {ADD_OP} && binsof (alu_flags.neg);
+		bins T7_negative_sub = binsof (all_ops) intersect {SUB_OP} && binsof (alu_flags.neg);
+		bins T7_negative_and = binsof (all_ops) intersect {AND_OP} && binsof (alu_flags.neg);
+		bins T7_negative_or = binsof (all_ops) intersect {OR_OP} && binsof (alu_flags.neg);
 		
-		bins T8_zero_add = binsof (all_ops) intersect {ADD_OP} && binsof (flags.zero);
-		bins T8_zero_sub = binsof (all_ops) intersect {SUB_OP} && binsof (flags.zero);
-		bins T8_zero_and = binsof (all_ops) intersect {AND_OP} && binsof (flags.zero);
-		bins T8_zero_or = binsof (all_ops) intersect {OR_OP} && binsof (flags.zero);
-		
-		ignore_bins err_flags = binsof (all_ops) && 
-			(binsof (flags.T11_errop) || binsof (flags.T9_errcrc) || binsof (flags.T10_errdata));
+		bins T8_zero_add = binsof (all_ops) intersect {ADD_OP} && binsof (alu_flags.zero);
+		bins T8_zero_sub = binsof (all_ops) intersect {SUB_OP} && binsof (alu_flags.zero);
+		bins T8_zero_and = binsof (all_ops) intersect {AND_OP} && binsof (alu_flags.zero);
+		bins T8_zero_or = binsof (all_ops) intersect {OR_OP} && binsof (alu_flags.zero);
 		
 		ignore_bins others_flags = binsof(all_ops.error_op);
+		
+		ignore_bins logic_carry_ovfl = 
+			(binsof (all_ops) intersect {AND_OP,OR_OP} && binsof (alu_flags.carry)) ||
+			(binsof (all_ops) intersect {AND_OP,OR_OP} && binsof (alu_flags.ovfl));
 	}
 endgroup
 
@@ -305,10 +310,9 @@ function logic verify_result(
 	input logic [2:0] ERROR,
 	input alu_result_t RSP);
 	
-	exp_result_t result;
-	result = alu_if.exp_result(A, B, OP);
+	exp_result = alu_if.exp_result(A, B, OP);
 
-	if((RSP.data == result.data && RSP.flags[3:0] == result.flags) || 
+	if((RSP.data == exp_result.data && RSP.flags[3:0] == exp_result.flags) || 
 		(RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE))
 		return 1'b0;
 	else
