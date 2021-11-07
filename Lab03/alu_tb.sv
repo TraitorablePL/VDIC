@@ -6,8 +6,8 @@
 import alu_pkg::*;
 
 module alu_tb();
-	
-	
+
+
 /**
  * Local variables and signals
  */
@@ -18,20 +18,15 @@ logic sin;
 logic sout;
 logic [31:0] A, B;
 
-logic [4:0] err_gen;
 logic [2:0] err_in;
-logic [1:0] op_gen;
 logic [2:0] op_in;
-logic [3:0] data_gen;
 logic rep_op;
 logic rst_op;
-	
 bit test_flag;
 	
 alu_result_t alu_result;
-exp_result_t exp_result;
-	
-	
+
+
 /**
  * Interfaces instantiation
  */ 
@@ -61,8 +56,7 @@ mtm_Alu mtm_Alu(
  */
  
 function logic signed [31:0] gen_data();
-	data_gen = $urandom() % 32;
-	case (data_gen)
+	case ($urandom() % 32)
 		0: return 32'h00000000;
 		1: return 32'hFFFFFFFF;
 		2: return 32'h80000000;
@@ -77,8 +71,7 @@ endfunction
  */
  
 function logic [2:0] gen_error();
-	err_gen = $urandom() % 64;
-	case (err_gen)
+	case ($urandom() % 64)
 		0: return F_ERRCRC;
 		1: return F_ERRDATA;
 		2: return F_ERROP;
@@ -92,7 +85,9 @@ endfunction
  */
  
 function logic [2:0] gen_op(input logic [2:0] err_in);
+	logic [1:0] op_gen;
 	op_gen = $urandom() % 4;
+	
 	if (err_in == F_ERROP) begin
 		case (op_gen)
 			0: return 3'b010;
@@ -110,6 +105,7 @@ function logic [2:0] gen_op(input logic [2:0] err_in);
 		endcase
 	end
 endfunction
+
 
 /**
  * Coverage
@@ -259,6 +255,7 @@ initial begin : coverage
         end
     end
 end : coverage
+
 
 /**
  * Tester

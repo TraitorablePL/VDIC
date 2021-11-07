@@ -26,7 +26,6 @@ function logic [3:0] _crc4(input logic [67:0] D);
 	return crc;
 endfunction
 
-
 function logic [3:0] _crc3(input logic [36:0] D);
 
 	logic [2:0] crc;
@@ -41,7 +40,9 @@ endfunction
  * Internal ALU tasks
  */
 
-task _tx_byte(input logic [7:0] data, input cmd_t tx_type);
+task _tx_byte(
+	input logic [7:0] data, 
+	input cmd_t tx_type);
 
 	/* START bit */
 	@(negedge clk);
@@ -65,8 +66,9 @@ task _tx_byte(input logic [7:0] data, input cmd_t tx_type);
 	sin = 1'b1;
 endtask
 
-
-task _rx_byte(output logic [7:0] data, output cmd_t rx_type);
+task _rx_byte(
+	output logic [7:0] data, 
+	output cmd_t rx_type);
 	
 	/* START and TYPE bits */
 	repeat (2) @(negedge clk);
@@ -85,8 +87,7 @@ task _rx_byte(output logic [7:0] data, output cmd_t rx_type);
 	@(negedge clk);
 endtask
 
-
-task _rx_rsp(output alu_result_t rsp_packet);
+task _rx_rsp(output alu_result_t rsp);
 	
 	logic rsp_type;
 	logic [7:0] data;
@@ -95,19 +96,19 @@ task _rx_rsp(output alu_result_t rsp_packet);
 	_rx_byte(data, rsp_type);
 
 	if(rsp_type) begin
-		rsp_packet.data = 32'h00000000;
-		rsp_packet.flags = data[6:1];
+		rsp.data = 32'h00000000;
+		rsp.flags = data[6:1];
 		assert(data[0] == 1'b1) 
 			else $error("ERROR: Invalid parity bit of CTL");
 	end
 	else begin
-		rsp_packet.data[31:24] = data;
-		_rx_byte(rsp_packet.data[23:16], rsp_type);
-		_rx_byte(rsp_packet.data[15:8], rsp_type);
-		_rx_byte(rsp_packet.data[7:0], rsp_type);
+		rsp.data[31:24] = data;
+		_rx_byte(rsp.data[23:16], rsp_type);
+		_rx_byte(rsp.data[15:8], rsp_type);
+		_rx_byte(rsp.data[7:0], rsp_type);
 		_rx_byte(data, rsp_type);
-		rsp_packet.flags = {2'b00, data[6:3]};
-		assert (data[2:0] == _crc3({rsp_packet.data, 1'b0, data[6:3]})) 
+		rsp.flags = {2'b00, data[6:3]};
+		assert (data[2:0] == _crc3({rsp.data, 1'b0, data[6:3]})) 
 			else $error("ERROR: Invalid CRC3 of DATA");
 	end
 endtask
@@ -117,7 +118,7 @@ task _alu_op(
 	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
 	input logic [2:0] ERROR,
-	output alu_result_t rsp_packet);
+	output alu_result_t RSP);
 
 	logic [3:0] crc;
 	
@@ -134,18 +135,16 @@ task _alu_op(
 	_tx_byte(A[15:8], DATA);
 	_tx_byte(A[7:0], DATA);
 
-	
-	
 	if(ERROR == F_ERRCRC)
-		crc = _crc4({B,A,1'b0,OP});
+		crc = _crc4({B, A, 1'b0, OP});
 	else
-		crc = _crc4({B,A,1'b1,OP});
+		crc = _crc4({B, A, 1'b1, OP});
 		
 	_tx_byte({1'b0, OP, crc}, CTL);
 	
-	rsp_packet.data = 32'h00000000;
-	rsp_packet.flags = 6'b000000;
-	_rx_rsp(rsp_packet);
+	RSP.data = 32'h00000000;
+	RSP.flags = 6'b000000;
+	_rx_rsp(RSP);
 endtask
 
 
@@ -166,9 +165,9 @@ task op(
 	input logic signed [31:0] B, 
 	input logic [2:0] OP, 
 	input logic [2:0] ERROR,
-	output alu_result_t rsp_packet);
+	output alu_result_t RSP);
 	
-	_alu_op(A, B, OP, ERROR, rsp_packet);
+	_alu_op(A, B, OP, ERROR, RSP);
 endtask
 
 function exp_result_t exp_result(
