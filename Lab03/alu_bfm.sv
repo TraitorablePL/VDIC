@@ -234,13 +234,14 @@ task op(
 	if(RST)
 		rst();
 	
-//	A = _A;
-//	B = _B;
-//	OP = _OP;
-//	ERROR = _ERROR;
+	A = _A;
+	B = _B;
+	OP = _OP;
+	ERROR = _ERROR;
 	EXP_RESULT = exp_result(A, B, OP);
 	
 	_alu_op(A, B, OP, ERROR, _ALU_RESULT);
+	ALU_RESULT = _ALU_RESULT;
 	DONE = 1'b1;
 	
 	repeat(2) @(negedge clk);

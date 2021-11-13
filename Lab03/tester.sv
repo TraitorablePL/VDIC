@@ -2,6 +2,12 @@ module tester(alu_bfm bfm);
 	
 import alu_pkg::*;
 
+/* Local data */
+logic signed [31:0] A; 
+logic signed [31:0] B;
+logic [2:0] OP;
+logic [2:0] ERROR;
+	
 /**
  * Data generator
  */
@@ -71,16 +77,16 @@ initial begin : tester
 		bfm.REP = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		bfm.RST = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		
-		bfm.ERROR = gen_error();
-		bfm.OP = gen_op(bfm.ERROR);
-		bfm.A = gen_data();
-		bfm.B = gen_data();
+		ERROR = gen_error();
+		OP = gen_op(ERROR);
+		A = gen_data();
+		B = gen_data();
 		
-		bfm.op(bfm.A, bfm.B, bfm.OP, bfm.ERROR, bfm.ALU_RESULT);
+		bfm.op(A, B, OP, ERROR, bfm.ALU_RESULT);
 		repeat(2) @(negedge bfm.clk);
 		
 		if(bfm.REP == 1'b1) begin
-			bfm.op(bfm.A, bfm.B, bfm.OP, bfm.ERROR, bfm.ALU_RESULT);
+			bfm.op(A, B, OP, ERROR, bfm.ALU_RESULT);
 			repeat(2) @(negedge bfm.clk);
 		end
 	end

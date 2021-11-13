@@ -13,11 +13,9 @@ function logic verify_result(
 	input logic [2:0] OP, 
 	input logic [2:0] ERROR,
 	input alu_result_t RSP);
-	
-	bfm.EXP_RESULT = bfm.exp_result(A, B, OP);
 
 	if((RSP.data == bfm.EXP_RESULT.data && RSP.flags[3:0] == bfm.EXP_RESULT.flags) || 
-		(RSP.flags[5:3] == ERROR && ERROR != F_ERRNONE))
+		(RSP.flags[5:3] == bfm.ERROR && bfm.ERROR != F_ERRNONE))
 		return 1'b0;
 	else
 		return 1'b1;
@@ -47,6 +45,8 @@ initial begin : scoreboard
 		$display("|          A: 0x%08h", bfm.A);
 		$display("|          C: 0x%08h", bfm.ALU_RESULT.data);
 		$display("|      FLAGS: %06b", bfm.ALU_RESULT.flags);
+		$display("|      EXP_C: 0x%08h", bfm.EXP_RESULT.data);
+		$display("|  EXP_FLAGS: %04b", bfm.EXP_RESULT.flags);
 `endif
 		@(posedge bfm.clk);
 		bfm.DONE = 1'b0;
