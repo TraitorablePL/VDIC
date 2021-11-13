@@ -1,4 +1,7 @@
 alu_pkg.sv
-alu_tb.sv
-alu_if.sv
+alu_bfm.sv
+top.sv
+tester.sv
+coverage.sv
+scoreboard.sv
 mtm_Alu.vp

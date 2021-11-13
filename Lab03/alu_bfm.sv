@@ -1,17 +1,28 @@
+`timescale 1ns / 1ps
 
+interface alu_bfm;
+	
 import alu_pkg::*;
 
-interface alu_if(
-	/* global signals */
-	output logic 	clk,
-	output logic 	rst_n,
+/* Global signals */
+logic clk;
+logic rst_n;
+
+/* Local data */
+logic signed [31:0] A; 
+logic signed [31:0] B;
+logic [2:0] OP;
+logic [2:0] ERROR;
+logic DONE;
+logic RST;
+logic REP;
+exp_result_t EXP_RESULT;
+alu_result_t ALU_RESULT;
 	
-	/* alu serial data */
-	output logic 	sin,
-	input logic 	sout
-);
-	
-	
+/* ALU serial data */
+logic sin;
+logic sout;
+
 /**
  * Tasks and function definitions
  */
@@ -114,10 +125,10 @@ task _rx_rsp(output alu_result_t rsp);
 endtask
 
 task _alu_op(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B, 
-	input logic [2:0] OP, 
-	input logic [2:0] ERROR,
+	input logic signed [31:0] _A, 
+	input logic signed [31:0] _B, 
+	input logic [2:0] _OP, 
+	input logic [2:0] _ERROR,
 	output alu_result_t RSP);
 
 	logic [3:0] crc;
@@ -125,7 +136,7 @@ task _alu_op(
 	_tx_byte(B[31:24], DATA);
 	_tx_byte(B[23:16], DATA);
 	_tx_byte(B[15:8], DATA);
-	if(ERROR == F_ERRDATA) 
+	if(_ERROR == F_ERRDATA) 
 		_tx_byte(B[7:0], CTL);
 	else
 		_tx_byte(B[7:0], DATA);
@@ -135,39 +146,16 @@ task _alu_op(
 	_tx_byte(A[15:8], DATA);
 	_tx_byte(A[7:0], DATA);
 
-	if(ERROR == F_ERRCRC)
-		crc = _crc4({B, A, 1'b0, OP});
+	if(_ERROR == F_ERRCRC)
+		crc = _crc4({B, A, 1'b0, _OP});
 	else
-		crc = _crc4({B, A, 1'b1, OP});
+		crc = _crc4({B, A, 1'b1, _OP});
 		
-	_tx_byte({1'b0, OP, crc}, CTL);
+	_tx_byte({1'b0, _OP, crc}, CTL);
 	
 	RSP.data = 32'h00000000;
 	RSP.flags = 6'b000000;
 	_rx_rsp(RSP);
-endtask
-
-
-/**
- * ALU external tasks and functions
- */
-
-task rst();
-	sin = 1'b1;
-	rst_n = 1'b0;
-	
-	@(negedge clk);    
-    rst_n = 1'b1;
-endtask
-
-task op(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B, 
-	input logic [2:0] OP, 
-	input logic [2:0] ERROR,
-	output alu_result_t RSP);
-	
-	_alu_op(A, B, OP, ERROR, RSP);
 endtask
 
 function exp_result_t exp_result(
@@ -222,6 +210,41 @@ function exp_result_t exp_result(
 	
 	return result;
 endfunction
+
+
+/**
+ * ALU external tasks and functions
+ */
+
+task rst();
+	sin = 1'b1;
+	rst_n = 1'b0;
+	
+	@(negedge clk);    
+    rst_n = 1'b1;
+endtask
+
+task op(
+	input logic signed [31:0] _A, 
+	input logic signed [31:0] _B, 
+	input logic [2:0] _OP, 
+	input logic [2:0] _ERROR,
+	output alu_result_t _ALU_RESULT);
+	
+	if(RST)
+		rst();
+	
+//	A = _A;
+//	B = _B;
+//	OP = _OP;
+//	ERROR = _ERROR;
+	EXP_RESULT = exp_result(A, B, OP);
+	
+	_alu_op(A, B, OP, ERROR, _ALU_RESULT);
+	DONE = 1'b1;
+	
+	repeat(2) @(negedge clk);
+endtask
 
 
 /**
