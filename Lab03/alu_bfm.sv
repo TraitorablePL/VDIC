@@ -9,13 +9,15 @@ logic clk;
 logic rst_n;
 
 /* Local data */
-logic signed [31:0] A; 
-logic signed [31:0] B;
+logic [31:0] A; 
+logic [31:0] B;
 logic [2:0] OP;
 logic [2:0] ERROR;
 logic DONE;
 logic RST;
 logic REP;
+logic CARRY;
+logic OVFL;
 exp_result_t EXP_RESULT;
 alu_result_t ALU_RESULT;
 	
@@ -239,6 +241,8 @@ task op(
 	OP = _OP;
 	ERROR = _ERROR;
 	EXP_RESULT = exp_result(A, B, OP);
+	CARRY = EXP_RESULT.flags & F_CARRY;
+	OVFL = EXP_RESULT.flags & F_OVFL;
 	
 	_alu_op(A, B, OP, ERROR, _ALU_RESULT);
 	ALU_RESULT = _ALU_RESULT;

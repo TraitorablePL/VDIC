@@ -21,10 +21,10 @@ covergroup op_cov;
 	}
 	
 	alu_flags : coverpoint bfm.EXP_RESULT.flags {
-		bins neg = {F_NEG};
-		bins zero = {F_ZERO};
-		bins ovfl = {F_OVFL};
-		bins carry = {F_CARRY};
+		wildcard bins neg = {4'b???1};
+		wildcard bins zero = {4'b??1?};
+		wildcard bins ovfl = {4'b?1??};
+		wildcard bins carry = {4'b1???};
 	}
 	
 	err_flags : coverpoint bfm.ERROR {
@@ -85,11 +85,11 @@ covergroup extreme_val_on_ops;
     }
 
     b_arg: coverpoint bfm.B {
-        bins zeros = {'h00000000};
-		bins min = {'h80000000};
-        bins others = {['h00000001:'h7FFFFFFE], ['h80000001:'hFFFFFFFE]};
-		bins max  = {'h7FFFFFFF};
-        bins ones  = {'hFFFFFFFF};
+        bins zeros = {32'h00000000};
+		bins min = {32'h80000000};
+        bins others = {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
+		bins max  = {32'h7FFFFFFF};
+        bins ones  = {32'hFFFFFFFF};
     }
     
     Test_ops_extreme_values: cross a_arg, b_arg, all_ops {
