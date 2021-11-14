@@ -73,7 +73,7 @@ initial begin : tester
 	bfm.rst();
 	bfm.DONE = 1'b0;
 	
-	repeat (20000) begin
+	repeat (10000) begin
 		bfm.REP = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		bfm.RST = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 		

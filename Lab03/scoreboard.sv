@@ -7,15 +7,10 @@ import alu_pkg::*;
  * Test verifier
  */
 
-function bit verify_result(
-	input bit signed [31:0] A, 
-	input bit signed [31:0] B, 
-	input bit [2:0] OP, 
-	input bit [2:0] ERROR,
-	input alu_result_t RSP);
+function bit verify_result();
 
-	if((RSP.data == bfm.EXP_RESULT.data && RSP.flags[3:0] == bfm.EXP_RESULT.flags) || 
-		(RSP.flags[5:3] == bfm.ERROR && bfm.ERROR != F_ERRNONE))
+	if((bfm.ALU_RESULT.data == bfm.EXP_RESULT.data && bfm.ALU_RESULT.flags[3:0] == bfm.EXP_RESULT.flags) || 
+		(bfm.ALU_RESULT.flags[5:3] == bfm.ERROR && bfm.ERROR != F_ERRNONE))
 		return 1'b0;
 	else
 		return 1'b1;
@@ -29,7 +24,7 @@ endfunction
 initial begin : scoreboard
 	forever begin
 		@(posedge bfm.DONE);
-		assert(1'b0 == verify_result(bfm.A, bfm.B, bfm.OP, bfm.ERROR, bfm.ALU_RESULT)) begin
+		assert(1'b0 == verify_result()) begin
 `ifdef DEBUG
 		$display("\nTEST PASSED");
 `endif

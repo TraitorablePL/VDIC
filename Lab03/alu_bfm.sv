@@ -8,7 +8,7 @@ import alu_pkg::*;
 bit clk;
 bit rst_n;
 
-/* Local data */
+/* Interface data */
 bit [31:0] A; 
 bit [31:0] B;
 bit [2:0] OP;
@@ -16,8 +16,6 @@ bit [2:0] ERROR;
 bit DONE;
 bit RST;
 bit REP;
-bit CARRY;
-bit OVFL;
 exp_result_t EXP_RESULT;
 alu_result_t ALU_RESULT;
 	
@@ -160,7 +158,7 @@ task _alu_op(
 	_rx_rsp(RSP);
 endtask
 
-function exp_result_t exp_result(
+function exp_result_t _exp_result(
 	input bit signed [31:0] A, 
 	input bit signed [31:0] B, 
 	input bit [2:0] OP);
@@ -240,9 +238,7 @@ task op(
 	B = _B;
 	OP = _OP;
 	ERROR = _ERROR;
-	EXP_RESULT = exp_result(A, B, OP);
-	CARRY = EXP_RESULT.flags & F_CARRY;
-	OVFL = EXP_RESULT.flags & F_OVFL;
+	EXP_RESULT = _exp_result(A, B, OP);
 	
 	_alu_op(A, B, OP, ERROR, _ALU_RESULT);
 	ALU_RESULT = _ALU_RESULT;
