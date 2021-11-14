@@ -5,33 +5,33 @@ interface alu_bfm;
 import alu_pkg::*;
 
 /* Global signals */
-logic clk;
-logic rst_n;
+bit clk;
+bit rst_n;
 
 /* Local data */
-logic [31:0] A; 
-logic [31:0] B;
-logic [2:0] OP;
-logic [2:0] ERROR;
-logic DONE;
-logic RST;
-logic REP;
-logic CARRY;
-logic OVFL;
+bit [31:0] A; 
+bit [31:0] B;
+bit [2:0] OP;
+bit [2:0] ERROR;
+bit DONE;
+bit RST;
+bit REP;
+bit CARRY;
+bit OVFL;
 exp_result_t EXP_RESULT;
 alu_result_t ALU_RESULT;
 	
 /* ALU serial data */
-logic sin;
-logic sout;
+bit sin;
+bit sout;
 
 /**
  * Tasks and function definitions
  */
 
-function logic [3:0] _crc4(input logic [67:0] D);
+function bit [3:0] _crc4(input bit [67:0] D);
 	
-	logic [3:0] crc;
+	bit [3:0] crc;
 	crc[0] = D[66] ^ D[64] ^ D[63] ^ D[60] ^ D[56] ^ D[55] ^ D[54] ^ D[53] ^ D[51] ^ D[49] ^ D[48] ^ D[45] ^ D[41] ^ D[40] ^ D[39] ^ D[38] ^ D[36] ^ D[34] ^ D[33] ^ D[30] ^ D[26] ^ D[25] ^ D[24] ^ D[23] ^ D[21] ^ D[19] ^ D[18] ^ D[15] ^ D[11] ^ D[10] ^ D[9] ^ D[8] ^ D[6] ^ D[4] ^ D[3] ^ D[0];
 	crc[1] = D[67] ^ D[66] ^ D[65] ^ D[63] ^ D[61] ^ D[60] ^ D[57] ^ D[53] ^ D[52] ^ D[51] ^ D[50] ^ D[48] ^ D[46] ^ D[45] ^ D[42] ^ D[38] ^ D[37] ^ D[36] ^ D[35] ^ D[33] ^ D[31] ^ D[30] ^ D[27] ^ D[23] ^ D[22] ^ D[21] ^ D[20] ^ D[18] ^ D[16] ^ D[15] ^ D[12] ^ D[8] ^ D[7] ^ D[6] ^ D[5] ^ D[3] ^ D[1] ^ D[0];
 	crc[2] = D[67] ^ D[66] ^ D[64] ^ D[62] ^ D[61] ^ D[58] ^ D[54] ^ D[53] ^ D[52] ^ D[51] ^ D[49] ^ D[47] ^ D[46] ^ D[43] ^ D[39] ^ D[38] ^ D[37] ^ D[36] ^ D[34] ^ D[32] ^ D[31] ^ D[28] ^ D[24] ^ D[23] ^ D[22] ^ D[21] ^ D[19] ^ D[17] ^ D[16] ^ D[13] ^ D[9] ^ D[8] ^ D[7] ^ D[6] ^ D[4] ^ D[2] ^ D[1];
@@ -39,9 +39,9 @@ function logic [3:0] _crc4(input logic [67:0] D);
 	return crc;
 endfunction
 
-function logic [3:0] _crc3(input logic [36:0] D);
+function bit [3:0] _crc3(input bit [36:0] D);
 
-	logic [2:0] crc;
+	bit [2:0] crc;
 	crc[0] = D[35] ^ D[32] ^ D[31] ^ D[30] ^ D[28] ^ D[25] ^ D[24] ^ D[23] ^ D[21] ^ D[18] ^ D[17] ^ D[16] ^ D[14] ^ D[11] ^ D[10] ^ D[9] ^ D[7] ^ D[4] ^ D[3] ^ D[2] ^ D[0];
 	crc[1] = D[36] ^ D[35] ^ D[33] ^ D[30] ^ D[29] ^ D[28] ^ D[26] ^ D[23] ^ D[22] ^ D[21] ^ D[19] ^ D[16] ^ D[15] ^ D[14] ^ D[12] ^ D[9] ^ D[8] ^ D[7] ^ D[5] ^ D[2] ^ D[1] ^ D[0];
 	crc[2] = D[36] ^ D[34] ^ D[31] ^ D[30] ^ D[29] ^ D[27] ^ D[24] ^ D[23] ^ D[22] ^ D[20] ^ D[17] ^ D[16] ^ D[15] ^ D[13] ^ D[10] ^ D[9] ^ D[8] ^ D[6] ^ D[3] ^ D[2] ^ D[1];
@@ -54,7 +54,7 @@ endfunction
  */
 
 task _tx_byte(
-	input logic [7:0] data, 
+	input bit [7:0] data, 
 	input cmd_t tx_type);
 
 	/* START bit */
@@ -80,7 +80,7 @@ task _tx_byte(
 endtask
 
 task _rx_byte(
-	output logic [7:0] data, 
+	output bit [7:0] data, 
 	output cmd_t rx_type);
 	
 	/* START and TYPE bits */
@@ -102,8 +102,8 @@ endtask
 
 task _rx_rsp(output alu_result_t rsp);
 	
-	logic rsp_type;
-	logic [7:0] data;
+	bit rsp_type;
+	bit [7:0] data;
 	
 	@(negedge sout);
 	_rx_byte(data, rsp_type);
@@ -127,13 +127,13 @@ task _rx_rsp(output alu_result_t rsp);
 endtask
 
 task _alu_op(
-	input logic signed [31:0] _A, 
-	input logic signed [31:0] _B, 
-	input logic [2:0] _OP, 
-	input logic [2:0] _ERROR,
+	input bit signed [31:0] _A, 
+	input bit signed [31:0] _B, 
+	input bit [2:0] _OP, 
+	input bit [2:0] _ERROR,
 	output alu_result_t RSP);
 
-	logic [3:0] crc;
+	bit [3:0] crc;
 	
 	_tx_byte(B[31:24], DATA);
 	_tx_byte(B[23:16], DATA);
@@ -161,11 +161,11 @@ task _alu_op(
 endtask
 
 function exp_result_t exp_result(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B, 
-	input logic [2:0] OP);
+	input bit signed [31:0] A, 
+	input bit signed [31:0] B, 
+	input bit [2:0] OP);
 	
-	logic [32:0] carry_chk;
+	bit [32:0] carry_chk;
 	exp_result_t result;
 	
 	result.flags = F_NONE;
@@ -227,10 +227,10 @@ task rst();
 endtask
 
 task op(
-	input logic signed [31:0] _A, 
-	input logic signed [31:0] _B, 
-	input logic [2:0] _OP, 
-	input logic [2:0] _ERROR,
+	input bit signed [31:0] _A, 
+	input bit signed [31:0] _B, 
+	input bit [2:0] _OP, 
+	input bit [2:0] _ERROR,
 	output alu_result_t _ALU_RESULT);
 	
 	if(RST)

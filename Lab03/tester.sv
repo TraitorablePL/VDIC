@@ -3,16 +3,16 @@ module tester(alu_bfm bfm);
 import alu_pkg::*;
 
 /* Local data */
-logic signed [31:0] A; 
-logic signed [31:0] B;
-logic [2:0] OP;
-logic [2:0] ERROR;
+bit signed [31:0] A; 
+bit signed [31:0] B;
+bit [2:0] OP;
+bit [2:0] ERROR;
 	
 /**
  * Data generator
  */
  
-function logic signed [31:0] gen_data();
+function bit signed [31:0] gen_data();
 	case ($urandom() % 32)
 		0: return 32'h00000000;
 		1: return 32'hFFFFFFFF;
@@ -27,7 +27,7 @@ endfunction
  * Error generator
  */
  
-function logic [2:0] gen_error();
+function bit [2:0] gen_error();
 	case ($urandom() % 64)
 		0: return F_ERRCRC;
 		1: return F_ERRDATA;
@@ -41,8 +41,8 @@ endfunction
  * Operation generator
  */
  
-function logic [2:0] gen_op(input logic [2:0] err_in);
-	logic [1:0] op_gen;
+function bit [2:0] gen_op(input bit [2:0] err_in);
+	bit [1:0] op_gen;
 	op_gen = $urandom() % 4;
 	
 	if (err_in == F_ERROP) begin

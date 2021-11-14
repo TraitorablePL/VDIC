@@ -22,13 +22,13 @@ package alu_pkg;
 		F_ERRDATA = 3'b100} err_t;
 	
 	typedef struct {
-		logic signed [31:0] data;
-		logic [5:0] flags;
+		bit signed [31:0] data;
+		bit [5:0] flags;
 	} alu_result_t;
 	
 	typedef struct {
-		logic signed [31:0] data;
-		logic [3:0] flags;
+		bit signed [31:0] data;
+		bit [3:0] flags;
 	} exp_result_t;
 	
 endpackage

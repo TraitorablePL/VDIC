@@ -7,11 +7,11 @@ import alu_pkg::*;
  * Test verifier
  */
 
-function logic verify_result(
-	input logic signed [31:0] A, 
-	input logic signed [31:0] B, 
-	input logic [2:0] OP, 
-	input logic [2:0] ERROR,
+function bit verify_result(
+	input bit signed [31:0] A, 
+	input bit signed [31:0] B, 
+	input bit [2:0] OP, 
+	input bit [2:0] ERROR,
 	input alu_result_t RSP);
 
 	if((RSP.data == bfm.EXP_RESULT.data && RSP.flags[3:0] == bfm.EXP_RESULT.flags) || 
