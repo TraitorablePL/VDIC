@@ -3,10 +3,10 @@ class Tester;
 	virtual alu_bfm bfm;
 
 	/* Local data */
-	bit signed [31:0] A; 
-	bit signed [31:0] B;
-	bit [2:0] OP;
-	bit [2:0] ERROR;
+	protected bit signed [31:0] A; 
+	protected bit signed [31:0] B;
+	protected bit [2:0] OP;
+	protected bit [2:0] ERROR;
 	
 	function new(virtual alu_bfm b);
 		bfm = b;
@@ -17,7 +17,7 @@ class Tester;
 	 */
 	 
 	protected function bit signed [31:0] gen_data();
-		case ($urandom() % 32)
+		case ($urandom() % 16)
 			0: return 32'h00000000;
 			1: return 32'hFFFFFFFF;
 			2: return 32'h80000000;
