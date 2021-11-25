@@ -16,7 +16,7 @@
 
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
-TESTS=(Lab02);
+TESTS=(Lab04_part2);
 #------------------------------------------------------------------------------
 # Default .f file
 FFILE="alu_tb.f"

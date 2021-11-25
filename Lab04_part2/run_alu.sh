@@ -2,7 +2,7 @@
 
 source /cad/env/cadence_path.XCELIUM1909
 
-TESTS=(Lab03);
+TESTS=(Lab04_part2);
 
 FFILE="alu_tb.f"
 
