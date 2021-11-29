@@ -1,8 +1,9 @@
-class Coverage;
+class Coverage extends uvm_component;
+	`uvm_component_utils(Coverage)
 
 	virtual alu_bfm bfm;
-
-
+	
+	
 /**
  * Coverage
  */
@@ -138,27 +139,32 @@ class Coverage;
 	        ignore_bins others_only =
 	        	binsof(a_arg.others) && binsof(b_arg.others);
 	    }
-		
 	endgroup
 	
-/**
- * Coverage functions and tasks
- */
 
-	function new (virtual alu_bfm b);
+/**
+ * Coverage tasks and functions
+ */
+	
+	function new (string name, uvm_component parent);
+		super.new(name, parent);
 		op_cov = new();
 	    extreme_val_on_ops = new();
-		bfm = b;
 	endfunction : new
+
+	function void build_phase(uvm_phase phase);
+		if(!uvm_config_db #(virtual alu_bfm)::get(null, "*", "bfm", bfm))
+			$fatal(1, "Failed to get BFM");
+	endfunction : build_phase
 	
-	task execute();
-	    forever begin : sample_cov
+	task run_phase(uvm_phase phase);
+		forever begin : sample_cov
 	        @(posedge bfm.clk);
 	        if(bfm.rst_n) begin
 	            op_cov.sample();
 	            extreme_val_on_ops.sample();
 	        end
 	    end : sample_cov
-	endtask : execute
+	endtask : run_phase
 	
 endclass : Coverage

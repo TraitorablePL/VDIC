@@ -4,11 +4,11 @@ interface alu_bfm;
 	
 import alu_pkg::*;
 
-/* Global signals */
+// Global signals
 bit clk;
 bit rst_n;
 
-/* Interface data */
+// Interface data
 bit [31:0] A; 
 bit [31:0] B;
 bit [2:0] OP;
@@ -19,12 +19,12 @@ bit REP;
 exp_result_t EXP_RESULT;
 alu_result_t ALU_RESULT;
 	
-/* ALU serial data */
+// ALU serial data
 bit sin;
 bit sout;
 
 /**
- * Tasks and function definitions
+ * CRC Tasks and function definitions
  */
 
 function bit [3:0] _crc4(input bit [67:0] D);
@@ -48,7 +48,7 @@ endfunction
 
 
 /**
- * Internal ALU tasks
+ * Internal ALU tasks and functions
  */
 
 task _tx_byte(

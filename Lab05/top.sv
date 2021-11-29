@@ -3,7 +3,12 @@
 *******************************************************************************/
 
 module top;
+	
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+	
 import alu_pkg::*;
+
 
 /**
  * Interfaces instantiation
@@ -22,12 +27,10 @@ mtm_Alu mtm_Alu(
 	.sin(bfm.sin),
 	.sout(bfm.sout)
 );
- 
-Testbench testbench_h;
 
 initial begin
-	testbench_h = new(bfm);
-	testbench_h.execute();
+	uvm_config_db #(virtual alu_bfm)::set(null, "*", "bfm", bfm);
+	run_test();
 end
 
-endmodule
+endmodule : top

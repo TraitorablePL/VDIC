@@ -1,4 +1,6 @@
 package alu_pkg;
+	import uvm_pkg::*;
+	`include "uvm_macros.svh"
 	
 	typedef enum bit {DATA, CTL} cmd_t;
 	
@@ -31,9 +33,11 @@ package alu_pkg;
 		bit [3:0] flags;
 	} exp_result_t;
 	
-`include "tester.svh"
-`include "scoreboard.svh"
 `include "coverage.svh"
-`include "testbench.svh"
+`include "base_tester.svh"
+`include "random_tester.svh"
+`include "scoreboard.svh"
+`include "env.svh"
+`include "random_test.svh"
 
 endpackage : alu_pkg
