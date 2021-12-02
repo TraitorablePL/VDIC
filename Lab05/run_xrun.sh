@@ -16,7 +16,7 @@
 
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
-TESTS=(Random_test Add_test);
+TESTS=(Random_test Extreme_val_test);
 #------------------------------------------------------------------------------
 # Default .f file
 FFILE="alu_tb.f"
