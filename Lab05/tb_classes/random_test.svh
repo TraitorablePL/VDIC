@@ -1,5 +1,6 @@
 class Random_test extends uvm_test;
-	`uvm_component_utils(Random_test);
+	
+	`uvm_component_utils(Random_test)
 
 	Env env_h;
 	

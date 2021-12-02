@@ -1,5 +1,6 @@
 class Env extends uvm_env;
-	`uvm_component_utils(Env);
+	
+	`uvm_component_utils(Env)
 	
 	Base_tester tester_h;
 	Coverage coverage_h;

@@ -1,5 +1,6 @@
 virtual class Base_tester extends uvm_component;
-	`uvm_component_utils(Base_tester);
+	
+	`uvm_component_utils(Base_tester)
 	
 	virtual alu_bfm bfm;
 	
@@ -23,6 +24,8 @@ virtual class Base_tester extends uvm_component;
 		bit [2:0] OP;
 		bit [2:0] ERROR;
 		
+		phase.raise_objection(this);
+		
 		bfm.rst();
 		bfm.DONE = 1'b0;
 		
@@ -45,7 +48,8 @@ virtual class Base_tester extends uvm_component;
 		end
 		
 		repeat (10) @(negedge bfm.clk);  
-		$finish();
+		phase.drop_objection(this);
+		
 	endtask : run_phase
 	
 	pure virtual function bit signed [31:0] gen_data();

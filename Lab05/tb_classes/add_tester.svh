@@ -1,4 +1,5 @@
 class Add_tester extends Random_tester;
+	
 	`uvm_component_utils(Add_tester)
 	
 	
@@ -10,7 +11,7 @@ class Add_tester extends Random_tester;
 		super.new(name, parent);
 	endfunction : new
 	
-	virtual function bit [2:0] gen_op(input bit [2:0] err_in);
+	function bit [2:0] gen_op(input bit [2:0] err_in);
 		return alu_pkg::ADD_OP;
 	endfunction
 	
