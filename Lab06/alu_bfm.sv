@@ -120,10 +120,10 @@ task _rx_rsp(output alu_result_t rsp);
 endtask
 
 task _alu_op(
-	input bit signed [31:0] _A, 
-	input bit signed [31:0] _B, 
-	input bit [2:0] _OP, 
-	input bit [2:0] _ERROR,
+	input bit signed [31:0] A, 
+	input bit signed [31:0] B, 
+	input bit [2:0] OP, 
+	input bit [2:0] ERROR,
 	output alu_result_t RSP);
 
 	bit [3:0] crc;
@@ -131,7 +131,7 @@ task _alu_op(
 	_tx_byte(B[31:24], DATA);
 	_tx_byte(B[23:16], DATA);
 	_tx_byte(B[15:8], DATA);
-	if(_ERROR == F_ERRDATA) 
+	if(ERROR == F_ERRDATA) 
 		_tx_byte(B[7:0], CTL);
 	else
 		_tx_byte(B[7:0], DATA);
@@ -141,12 +141,12 @@ task _alu_op(
 	_tx_byte(A[15:8], DATA);
 	_tx_byte(A[7:0], DATA);
 
-	if(_ERROR == F_ERRCRC)
-		crc = _crc4({B, A, 1'b0, _OP});
+	if(ERROR == F_ERRCRC)
+		crc = _crc4({B, A, 1'b0, OP});
 	else
-		crc = _crc4({B, A, 1'b1, _OP});
+		crc = _crc4({B, A, 1'b1, OP});
 		
-	_tx_byte({1'b0, _OP, crc}, CTL);
+	_tx_byte({1'b0, OP, crc}, CTL);
 	
 	RSP.data = 32'h00000000;
 	RSP.flags = 6'b000000;
@@ -271,7 +271,7 @@ initial begin : result_monitor_thread
 		if(DONE)
 			result_monitor_h.write_to_monitor(ALU_RESULT);
 	end
-end :result_monitor_h
+end : result_monitor_thread
 
 
 /**
