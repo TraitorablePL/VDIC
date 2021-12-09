@@ -42,6 +42,9 @@ package alu_pkg;
 		exp_result_t EXP_RESULT;
 	} cmd_pack_t;
 	
+`include "result_monitor.svh"
+`include "command_monitor.svh"
+`include "driver.svh"
 `include "coverage.svh"
 `include "base_tester.svh"
 `include "random_tester.svh"
@@ -50,8 +53,5 @@ package alu_pkg;
 `include "env.svh"
 `include "random_test.svh"
 `include "extreme_val_test.svh"
-`include "result_monitor.svh"
-`include "command_monitor.svh"
-`include "driver.svh"
 
 endpackage : alu_pkg
