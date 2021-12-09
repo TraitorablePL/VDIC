@@ -14,7 +14,6 @@ class Random_test extends uvm_test;
 	
 	function void build_phase(uvm_phase phase);
 		env_h = Env::type_id::create("env_h", this);
-		Base_tester::type_id::set_type_override(Random_tester::get_type());
 	endfunction : build_phase
 	
 	virtual function void start_of_simulation_phase(uvm_phase phase);

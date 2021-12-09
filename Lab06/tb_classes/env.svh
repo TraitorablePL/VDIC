@@ -3,8 +3,8 @@ class Env extends uvm_env;
 	`uvm_component_utils(Env)
 	
 	Random_tester tester_h;
-	Driver driver_h;
 	uvm_tlm_fifo #(cmd_pack_t) cmd_f;
+	Driver driver_h;
 	
 	Coverage coverage_h;
 	Scoreboard scoreboard_h;

@@ -9,8 +9,7 @@ bit clk;
 bit rst_n;
 
 // Interface data
-bit DONE;
-bit READY;
+bit DONE = 0;
 alu_result_t ALU_RESULT;
 cmd_pack_t CMD_PACK;
 	
@@ -236,14 +235,10 @@ task op(
 	CMD_PACK.RST = RST;
 	CMD_PACK.EXP_RESULT = _exp_result(A, B, OP);
 	
-	READY = 1'b1;
-	@(negedge clk); 
-	READY = 1'b0;
-	
 	_alu_op(A, B, OP, ERROR, ALU_RESULT);
 	DONE = 1'b1;
 	
-	repeat(2) @(negedge clk);
+	repeat(4) @(negedge clk);
 endtask
 
 
@@ -253,9 +248,11 @@ endtask
 
 Command_monitor command_monitor_h;
 
-always @(posedge clk) begin : cmd_monitor_thread
-	if(READY) 
+initial begin : cmd_monitor_thread
+	forever begin	
+		@(posedge DONE);
 		command_monitor_h.write_to_monitor(CMD_PACK);
+	end	
 end : cmd_monitor_thread
 
 
@@ -267,9 +264,9 @@ Result_monitor result_monitor_h;
 
 initial begin : result_monitor_thread
 	forever begin
-		@(posedge clk)
-		if(DONE)
-			result_monitor_h.write_to_monitor(ALU_RESULT);
+		@(posedge DONE)
+		result_monitor_h.write_to_monitor(ALU_RESULT);
+		DONE = 1'b0;
 	end
 end : result_monitor_thread
 

@@ -1,6 +1,6 @@
 virtual class Base_tester extends uvm_component;
 	
-	`uvm_component_utils(Base_tester)
+	//`uvm_component_utils(Base_tester)
 	
 	uvm_put_port #(cmd_pack_t) command_port;
 	
@@ -22,13 +22,20 @@ virtual class Base_tester extends uvm_component;
 		
 		phase.raise_objection(this);
 		
-		repeat (10000) begin : random_loop			
+		cmd.RST = 1;
+		cmd.A = gen_data();
+		cmd.B = gen_data();
+		cmd.ERROR = F_ERRNONE;
+		cmd.OP = AND_OP;
+		command_port.put(cmd);
+		
+		repeat (10000) begin : random_loop
 			cmd.RST = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 			cmd.A = gen_data();
 			cmd.B = gen_data();
 			cmd.ERROR = gen_error();
 			cmd.OP = gen_op(cmd.ERROR);
-			command_port.put(cmd);			
+			command_port.put(cmd);
 		end : random_loop
 		
 		#200;  

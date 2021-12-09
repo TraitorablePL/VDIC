@@ -49,13 +49,13 @@ class Scoreboard extends uvm_subscriber #(alu_result_t);
 `endif
 		end
 `ifdef DEBUG
-		$display("|         OP: %03b", bfm.OP);
-		$display("|          B: 0x%08h", bfm.B);
-		$display("|          A: 0x%08h", bfm.A);
-		$display("|          C: 0x%08h", bfm.ALU_RESULT.data);
-		$display("|      FLAGS: %06b", bfm.ALU_RESULT.flags);
-		$display("|      EXP_C: 0x%08h", bfm.EXP_RESULT.data);
-		$display("|  EXP_FLAGS: %04b", bfm.EXP_RESULT.flags);
+		$display("|         OP: %03b", cmd.OP);
+		$display("|          B: 0x%08h", cmd.B);
+		$display("|          A: 0x%08h", cmd.A);
+		$display("|          C: 0x%08h", t.data);
+		$display("|      FLAGS: %06b", t.flags);
+		$display("|      EXP_C: 0x%08h", cmd.EXP_RESULT.data);
+		$display("|  EXP_FLAGS: %04b", cmd.EXP_RESULT.flags);
 `endif
 	endfunction : write
 endclass : Scoreboard

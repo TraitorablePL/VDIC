@@ -2,8 +2,8 @@ class Coverage extends uvm_subscriber #(cmd_pack_t);
 	
 	`uvm_component_utils(Coverage)
 	
-	bit signed [31:0] A;
-	bit signed [31:0] B;
+	bit [31:0] A;
+	bit [31:0] B;
 	bit [2:0] OP;
 	bit [2:0] ERROR;
 	bit RST;
