@@ -10,7 +10,7 @@ class Random_tester extends Base_tester;
 		super.new(name, parent);
 	endfunction : new
 	
-	virtual function bit signed [31:0] gen_data();
+	virtual protected function bit signed [31:0] gen_data();
 		case ($urandom() % 16)
 			0: return 32'h00000000;
 			1: return 32'hFFFFFFFF;
@@ -20,7 +20,7 @@ class Random_tester extends Base_tester;
 		endcase
 	endfunction
 
-	virtual function bit [2:0] gen_error();
+	virtual protected function bit [2:0] gen_error();
 		case ($urandom() % 64)
 			0: return alu_pkg::F_ERRCRC;
 			1: return alu_pkg::F_ERRDATA;
@@ -29,7 +29,7 @@ class Random_tester extends Base_tester;
 		endcase
 	endfunction
 	
-	virtual function bit [2:0] gen_op(input bit [2:0] err_in);
+	virtual protected function bit [2:0] gen_op(input bit [2:0] err_in);
 		bit [1:0] op_gen;
 		op_gen = $urandom() % 4;
 		
