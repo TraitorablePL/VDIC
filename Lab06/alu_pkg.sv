@@ -33,6 +33,15 @@ package alu_pkg;
 		bit [3:0] flags;
 	} exp_result_t;
 	
+	typedef struct {
+		bit signed [31:0] A;
+		bit signed [31:0] B;
+		bit [2:0] OP;
+		bit [2:0] ERROR;
+		bit RST;
+		exp_result_t EXP_RESULT;
+	} cmd_pack_t;
+	
 `include "coverage.svh"
 `include "base_tester.svh"
 `include "random_tester.svh"

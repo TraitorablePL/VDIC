@@ -23,6 +23,8 @@ virtual class Base_tester extends uvm_component;
 		bit signed [31:0] B;
 		bit [2:0] OP;
 		bit [2:0] ERROR;
+		bit REP;
+		bit RST;
 		
 		phase.raise_objection(this);
 		
@@ -30,19 +32,19 @@ virtual class Base_tester extends uvm_component;
 		bfm.DONE = 1'b0;
 		
 		repeat (10000) begin
-			bfm.REP = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
-			bfm.RST = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
+			REP = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
+			RST = ($urandom() % 32 == 0) ? 1'b1 : 1'b0;
 			
 			ERROR = gen_error();
 			OP = gen_op(ERROR);
 			A = gen_data();
 			B = gen_data();
 			
-			bfm.op(A, B, OP, ERROR, bfm.ALU_RESULT);
+			bfm.op(A, B, OP, ERROR, RST);
 			repeat(2) @(negedge bfm.clk);
 			
-			if(bfm.REP == 1'b1) begin
-				bfm.op(A, B, OP, ERROR, bfm.ALU_RESULT);
+			if(REP == 1'b1) begin
+				bfm.op(A, B, OP, ERROR, RST);
 				repeat(2) @(negedge bfm.clk);
 			end
 		end

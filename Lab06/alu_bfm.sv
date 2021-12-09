@@ -9,15 +9,10 @@ bit clk;
 bit rst_n;
 
 // Interface data
-bit [31:0] A; 
-bit [31:0] B;
-bit [2:0] OP;
-bit [2:0] ERROR;
 bit DONE;
-bit RST;
-bit REP;
-exp_result_t EXP_RESULT;
+bit READY;
 alu_result_t ALU_RESULT;
+cmd_pack_t CMD_PACK;
 	
 // ALU serial data
 bit sin;
@@ -225,27 +220,58 @@ task rst();
 endtask
 
 task op(
-	input bit signed [31:0] _A, 
-	input bit signed [31:0] _B, 
-	input bit [2:0] _OP, 
-	input bit [2:0] _ERROR,
-	output alu_result_t _ALU_RESULT);
+	input bit signed [31:0] A, 
+	input bit signed [31:0] B, 
+	input bit [2:0] OP, 
+	input bit [2:0] ERROR,
+	input bit RST);
 	
 	if(RST)
 		rst();
 	
-	A = _A;
-	B = _B;
-	OP = _OP;
-	ERROR = _ERROR;
-	EXP_RESULT = _exp_result(A, B, OP);
+	CMD_PACK.A = A;
+	CMD_PACK.B = B;
+	CMD_PACK.OP = OP;
+	CMD_PACK.ERROR = ERROR;
+	CMD_PACK.RST = RST;
+	CMD_PACK.EXP_RESULT = _exp_result(A, B, OP);
 	
-	_alu_op(A, B, OP, ERROR, _ALU_RESULT);
-	ALU_RESULT = _ALU_RESULT;
+	READY = 1'b1;
+	@(negedge clk); 
+	READY = 1'b0;
+	
+	_alu_op(A, B, OP, ERROR, ALU_RESULT);
 	DONE = 1'b1;
 	
 	repeat(2) @(negedge clk);
 endtask
+
+
+/**
+ * Command monitor
+ */
+
+Command_monitor command_monitor_h;
+
+always @(posedge clk) begin : cmd_monitor_thread
+	if(READY) 
+		command_monitor_h.write_to_monitor(CMD_PACK);
+end : cmd_monitor_thread
+
+
+/**
+ * Result monitor
+ */
+
+Result_monitor result_monitor_h;
+
+initial begin : result_monitor_thread
+	forever begin
+		@(posedge clk)
+		if(DONE)
+			result_monitor_h.write_to_monitor(ALU_RESULT);
+	end
+end :result_monitor_h
 
 
 /**
