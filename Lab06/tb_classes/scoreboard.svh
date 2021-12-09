@@ -1,7 +1,8 @@
 class Scoreboard extends uvm_subscriber #(alu_result_t);
 	
 	`uvm_component_utils(Scoreboard)
-
+	
+	virtual alu_bfm bfm;
 	uvm_tlm_analysis_fifo #(cmd_pack_t) cmd_f;
 	
 /**
