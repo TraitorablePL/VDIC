@@ -2,7 +2,7 @@ class Result_monitor extends uvm_component;
 	
 	`uvm_component_utils(Result_monitor)
 	
-	uvm_analysis_port #(cmd_pack_t) ap;
+	uvm_analysis_port #(alu_result_t) ap;
 	
 	
 /**

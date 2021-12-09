@@ -1,8 +1,13 @@
-class Coverage extends uvm_component;
-	`uvm_component_utils(Coverage)
-
-	virtual alu_bfm bfm;
+class Coverage extends uvm_subscriber #(cmd_pack_t);
 	
+	`uvm_component_utils(Coverage)
+	
+	bit signed [31:0] A;
+	bit signed [31:0] B;
+	bit [2:0] OP;
+	bit [2:0] ERROR;
+	bit RST;
+	exp_result_t EXP_RESULT;
 	
 /**
  * Coverage
@@ -12,23 +17,23 @@ class Coverage extends uvm_component;
 		
 		option.name = "cg_op_cov";
 		
-		all_ops : coverpoint bfm.OP {
+		all_ops : coverpoint OP {
 			bins basic_op[] = {alu_pkg::AND_OP, alu_pkg::OR_OP, alu_pkg::ADD_OP, alu_pkg::SUB_OP};
 			bins error_op[] = {3'b010, 3'b011, 3'b110, 3'b111};
 		}
 		
-		rst : coverpoint bfm.RST {
+		rst : coverpoint RST {
 			bins active = {1'b1};
 		}
 		
-		alu_flags : coverpoint bfm.EXP_RESULT.flags {
+		alu_flags : coverpoint EXP_RESULT.flags {
 			wildcard bins neg = {4'b???1};
 			wildcard bins zero = {4'b??1?};
 			wildcard bins ovfl = {4'b?1??};
 			wildcard bins carry = {4'b1???};
 		}
 		
-		err_flags : coverpoint bfm.ERROR {
+		err_flags : coverpoint ERROR {
 			bins T9_errcrc = {alu_pkg::F_ERRCRC};
 			bins T10_errdata = {alu_pkg::F_ERRDATA};
 			bins T11_errop = {alu_pkg::F_ERROP};
@@ -73,11 +78,11 @@ class Coverage extends uvm_component;
 		
 		option.name = "cg_extreme_val_on_ops";
 		
-		all_ops : coverpoint bfm.OP {
+		all_ops : coverpoint OP {
 	        ignore_bins not_supported_ops = {3'b010, 3'b011, 3'b110, 3'b111};
 		}
 		
-		a_arg: coverpoint bfm.A {
+		a_arg: coverpoint A {
 	        bins zeros = {32'h00000000};
 			bins min = {32'h80000000};
 	        bins others = {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
@@ -85,7 +90,7 @@ class Coverage extends uvm_component;
 	        bins ones  = {32'hFFFFFFFF};
 	    }
 	
-	    b_arg: coverpoint bfm.B {
+	    b_arg: coverpoint B {
 	        bins zeros = {32'h00000000};
 			bins min = {32'h80000000};
 	        bins others = {[32'h00000001:32'h7FFFFFFE], [32'h80000001:32'hFFFFFFFE]};
@@ -150,20 +155,17 @@ class Coverage extends uvm_component;
 		op_cov = new();
 	    extreme_val_on_ops = new();
 	endfunction : new
-
-	function void build_phase(uvm_phase phase);
-		if(!uvm_config_db #(virtual alu_bfm)::get(null, "*", "bfm", bfm))
-			$fatal(1, "Failed to get BFM");
-	endfunction : build_phase
 	
-	task run_phase(uvm_phase phase);
-		forever begin : sample_cov
-	        @(posedge bfm.clk);
-	        if(bfm.rst_n) begin
-	            op_cov.sample();
-	            extreme_val_on_ops.sample();
-	        end
-	    end : sample_cov
-	endtask : run_phase
+	function void write(cmd_pack_t t);
+		A = t.A;
+		B = t.B;
+		OP = t.OP;
+		ERROR = t.ERROR;
+		RST = t.RST;
+		EXP_RESULT = t.EXP_RESULT;
+		
+		op_cov.sample();
+		extreme_val_on_ops.sample();
+	endfunction : write
 	
 endclass : Coverage

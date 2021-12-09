@@ -11,7 +11,7 @@ class Extreme_val_tester extends Random_tester;
 		super.new(name, parent);
 	endfunction : new
 	
-	function bit signed [31:0] gen_data();
+	protected function bit signed [31:0] gen_data();
 		case ($urandom() % 4)
 			0: return 32'h00000000;
 			1: return 32'hFFFFFFFF;
