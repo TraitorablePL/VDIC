@@ -52,5 +52,6 @@ package alu_pkg;
 `include "extreme_val_test.svh"
 `include "result_monitor.svh"
 `include "command_monitor.svh"
+`include "driver.svh"
 
 endpackage : alu_pkg
