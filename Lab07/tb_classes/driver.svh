@@ -3,7 +3,7 @@ class Driver extends uvm_component;
 	`uvm_component_utils(Driver)
 
 	virtual alu_bfm bfm;
-	uvm_get_port #(cmd_pack_t) command_port;
+	uvm_get_port #(Random_command) command_port;
 	
 	
 /**
@@ -21,7 +21,7 @@ class Driver extends uvm_component;
 	endfunction : build_phase
 
 	task run_phase(uvm_phase phase);
-		cmd_pack_t cmd;
+		Random_command cmd;
 		
 		forever begin : command_loop
 			command_port.get(cmd);

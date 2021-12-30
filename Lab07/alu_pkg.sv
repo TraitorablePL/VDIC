@@ -1,6 +1,8 @@
+`timescale 1ns / 1ps
+
 package alu_pkg;
 	import uvm_pkg::*;
-`include "uvm_macros.svh"
+    `include "uvm_macros.svh"
 	
 	typedef enum bit {DATA, CTL} cmd_t;
 	
@@ -44,11 +46,14 @@ package alu_pkg;
 		bit RST;
 		exp_result_t EXP_RESULT;
 	} cmd_pack_t;
-	
+
+
+`include "random_command.svh"
+`include "extreme_val_command.svh"
+`include "result_transaction.svh"
+
 `include "coverage.svh"
-`include "base_tester.svh"
-`include "random_tester.svh"
-`include "extreme_val_tester.svh"
+`include "tester.svh"
 `include "scoreboard.svh"
 `include "driver.svh"
 `include "command_monitor.svh"

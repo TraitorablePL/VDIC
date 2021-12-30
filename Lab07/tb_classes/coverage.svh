@@ -1,4 +1,4 @@
-class Coverage extends uvm_subscriber #(cmd_pack_t);
+class Coverage extends uvm_subscriber #(Random_command);
 	
 	`uvm_component_utils(Coverage)
 	
@@ -156,7 +156,7 @@ class Coverage extends uvm_subscriber #(cmd_pack_t);
 	    extreme_val_on_ops = new();
 	endfunction : new
 	
-	function void write(cmd_pack_t t);
+	function void write(Random_command t);
 		A = t.A;
 		B = t.B;
 		OP = t.OP;

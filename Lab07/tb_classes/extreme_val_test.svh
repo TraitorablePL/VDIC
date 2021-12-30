@@ -12,7 +12,7 @@ class Extreme_val_test extends Random_test;
 	
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
-		Random_tester::type_id::set_type_override(Extreme_val_tester::get_type());
+        Random_command::type_id::set_type_override(Extreme_val_command::get_type());
 	endfunction : build_phase
 	
 endclass : Extreme_val_test
