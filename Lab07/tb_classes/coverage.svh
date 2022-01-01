@@ -160,7 +160,6 @@ class Coverage extends uvm_subscriber #(Random_command);
 		ERROR = t.ERROR;
 		RST = t.RST;
 		EXP_RESULT = t.EXP_RESULT;
-		
 		op_cov.sample();
 		extreme_val_on_ops.sample();
 	endfunction : write

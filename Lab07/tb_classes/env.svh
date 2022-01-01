@@ -32,7 +32,7 @@ class Env extends uvm_env;
 	function void connect_phase(uvm_phase phase);
 		driver_h.command_port.connect(cmd_f.get_export);
 		tester_h.command_port.connect(cmd_f.put_export);
-        cmd_f.put_ap.connect(coverage_h.analysis_export);
+        command_monitor_h.ap.connect(coverage_h.analysis_export);
 		command_monitor_h.ap.connect(scoreboard_h.cmd_f.analysis_export);
         result_monitor_h.ap.connect(scoreboard_h.analysis_export);
 	endfunction : connect_phase

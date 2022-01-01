@@ -35,7 +35,7 @@ class Command_monitor extends uvm_component;
 	endfunction : write_to_monitor
 
 ////////////////////////////////////////
-// Command monitor contructor
+// Command monitor constructor
 ////////////////////////////////////////
 
 	function new(string name, uvm_component parent);

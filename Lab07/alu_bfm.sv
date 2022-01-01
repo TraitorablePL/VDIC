@@ -168,56 +168,56 @@ task _alu_op(
 endtask
 
 function exp_result_t _exp_result(
-	input bit signed [31:0] A, 
-	input bit signed [31:0] B, 
-	input bit [2:0] OP);
-	
-	bit [32:0] carry_chk;
-	exp_result_t result;
-	
-	result.flags = F_NONE;
-	
-	case(OP)
-		AND_OP:	begin
-			result.data = B & A;
-			carry_chk = 33'h000000000;
-		end
-		OR_OP:	begin
-			result.data = B | A;
-			carry_chk = 33'h000000000;
-		end
-		ADD_OP: begin
-			result.data = B + A;
-			carry_chk = {1'b0, B} + {1'b0, A};
-			
-			if((A[31] == 1'b0 && B[31] == 1'b0 && result.data[31] == 1'b1) || 
-				(A[31] == 1'b1 && B[31] == 1'b1 && result.data[31] == 1'b0))
-				result.flags |= F_OVFL;
-		end
-		SUB_OP: begin
-			result.data = B - A;
-			carry_chk = {1'b0, B} - {1'b0, A};
-			
-			if((A[31] == 1'b1 && B[31] == 1'b0 && result.data[31] == 1'b1) || 
-				(A[31] == 1'b0 && B[31] == 1'b1 && result.data[31] == 1'b0))
-				result.flags |= F_OVFL;
-		end
-		default: begin
-			result.data = 32'h00000000;
-			carry_chk = 33'h000000000;
-		end
-	endcase
-	
-	if(carry_chk[32] == 1'b1) 
-		result.flags |= F_CARRY;
-	
-	if(result.data < 0)
-		result.flags |= F_NEG;
-	
-	if(result.data == 0)
-		result.flags |= F_ZERO;
-	
-	return result;
+    input bit signed [31:0] A, 
+    input bit signed [31:0] B, 
+    input bit [2:0] OP);
+    
+    bit [32:0] carry_chk;
+    exp_result_t result;
+    
+    result.flags = F_NONE;
+    
+    case(OP)
+        AND_OP: begin
+            result.data = B & A;
+            carry_chk = 33'h000000000;
+        end
+        OR_OP:  begin
+            result.data = B | A;
+            carry_chk = 33'h000000000;
+        end
+        ADD_OP: begin
+            result.data = B + A;
+            carry_chk = {1'b0, B} + {1'b0, A};
+            
+            if((A[31] == 1'b0 && B[31] == 1'b0 && result.data[31] == 1'b1) || 
+                (A[31] == 1'b1 && B[31] == 1'b1 && result.data[31] == 1'b0))
+                result.flags |= F_OVFL;
+        end
+        SUB_OP: begin
+            result.data = B - A;
+            carry_chk = {1'b0, B} - {1'b0, A};
+            
+            if((A[31] == 1'b1 && B[31] == 1'b0 && result.data[31] == 1'b1) || 
+                (A[31] == 1'b0 && B[31] == 1'b1 && result.data[31] == 1'b0))
+                result.flags |= F_OVFL;
+        end
+        default: begin
+            result.data = 32'h00000000;
+            carry_chk = 33'h000000000;
+        end
+    endcase
+    
+    if(carry_chk[32] == 1'b1) 
+        result.flags |= F_CARRY;
+    
+    if(result.data < 0)
+        result.flags |= F_NEG;
+    
+    if(result.data == 0)
+        result.flags |= F_ZERO;
+    
+    return result;
 endfunction
 
 ////////////////////////////////////////
@@ -238,18 +238,33 @@ task op(
 	input bit [2:0] OP, 
 	input bit [2:0] ERROR,
 	input bit RST);
+    
+    bit [2:0] _OP;
+    
+    // Replace current OP with wrong OP
+    if(ERROR == F_ERROP) begin
+        case ($urandom() % 4)
+            0: _OP = 3'b010;
+            1: _OP = 3'b011;
+            2: _OP = 3'b110;
+            3: _OP = 3'b111;
+        endcase
+    end
+    else begin
+        _OP = OP;
+    end
 	
 	if(RST)
 		rst();
 	
 	CMD_PACK.A = A;
 	CMD_PACK.B = B;
-	CMD_PACK.OP = OP;
+	CMD_PACK.OP = _OP;
 	CMD_PACK.ERROR = ERROR;
 	CMD_PACK.RST = RST;
-	CMD_PACK.EXP_RESULT = _exp_result(A, B, OP);
+	CMD_PACK.EXP_RESULT = _exp_result(A, B, _OP);
 	
-	_alu_op(A, B, OP, ERROR, ALU_RESULT);
+	_alu_op(A, B, _OP, ERROR, ALU_RESULT);
 	DONE = 1'b1;
 	
 	repeat(4) @(negedge clk);

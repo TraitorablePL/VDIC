@@ -54,8 +54,8 @@ class Scoreboard extends uvm_subscriber #(Result_transaction);
 		$display("|         OP: %03b", cmd.OP);
 		$display("|          B: 0x%08h", cmd.B);
 		$display("|          A: 0x%08h", cmd.A);
-		$display("|          C: 0x%08h", t.data);
-		$display("|      FLAGS: %06b", t.flags);
+		$display("|          C: 0x%08h", t.ALU_RESULT.data);
+		$display("|      FLAGS: %06b", t.ALU_RESULT.flags);
 		$display("|      EXP_C: 0x%08h", cmd.EXP_RESULT.data);
 		$display("|  EXP_FLAGS: %04b", cmd.EXP_RESULT.flags);
 `endif

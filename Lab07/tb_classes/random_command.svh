@@ -11,42 +11,18 @@ class Random_command extends uvm_transaction;
     rand bit [2:0] OP;
     rand bit [2:0] ERROR;
     rand bit RST;
-    rand exp_result_t EXP_RESULT;
+    exp_result_t EXP_RESULT;
 
 ////////////////////////////////////////
 // Random command constraints
 ////////////////////////////////////////
 
-//    virtual protected function bit [2:0] gen_error();
-//        case ($urandom() % 64)
-//            0: return alu_pkg::F_ERRCRC;
-//            1: return alu_pkg::F_ERRDATA;
-//            2: return alu_pkg::F_ERROP;
-//            default: return alu_pkg::F_ERRNONE;
-//        endcase
-//    endfunction
-//    
-//    virtual protected function bit [2:0] gen_op(input bit [2:0] err_in);
-//        bit [1:0] op_gen;
-//        op_gen = $urandom() % 4;
-//        
-//        if (err_in == alu_pkg::F_ERROP) begin
-//            case (op_gen)
-//                0: return 3'b010;
-//                1: return 3'b011;
-//                2: return 3'b110;
-//                3: return 3'b111;
-//            endcase
-//        end
-//        else begin
-//            case (op_gen)
-//                0: return alu_pkg::AND_OP;
-//                1: return alu_pkg::OR_OP;
-//                2: return alu_pkg::ADD_OP;
-//                3: return alu_pkg::SUB_OP;
-//            endcase
-//        end
-    
+    constraint random_data {
+        OP dist {AND_OP := 1, OR_OP := 1, ADD_OP := 1, SUB_OP := 1};
+        RST dist {1'b0 :/ 60, 1'b1 :/ 40};
+        ERROR dist {F_ERRNONE :/ 70, F_ERRCRC :/ 10, F_ERRDATA :/ 10, F_ERROP :/ 10};
+    }
+
 ////////////////////////////////////////
 // Random command tasks and functions
 ////////////////////////////////////////
