@@ -2,8 +2,9 @@ class Random_command extends uvm_transaction;
 	
     `uvm_object_utils(Random_command)
     
-    
-// Transaction variables
+////////////////////////////////////////
+// Random command variables
+////////////////////////////////////////
 
     rand bit signed [31:0] A;
     rand bit signed [31:0] B;
@@ -11,20 +12,11 @@ class Random_command extends uvm_transaction;
     rand bit [2:0] ERROR;
     rand bit RST;
     rand exp_result_t EXP_RESULT;
-    
 
-// Constraints
+////////////////////////////////////////
+// Random command constraints
+////////////////////////////////////////
 
-//virtual protected function bit signed [31:0] gen_data();
-//        case ($urandom() % 16)
-//            0: return 32'h00000000;
-//            1: return 32'hFFFFFFFF;
-//            2: return 32'h80000000;
-//            3: return 32'h7FFFFFFF;
-//            default: return $random;
-//        endcase
-//    endfunction
-//
 //    virtual protected function bit [2:0] gen_error();
 //        case ($urandom() % 64)
 //            0: return alu_pkg::F_ERRCRC;
@@ -54,16 +46,11 @@ class Random_command extends uvm_transaction;
 //                3: return alu_pkg::SUB_OP;
 //            endcase
 //        end
+    
+////////////////////////////////////////
+// Random command tasks and functions
+////////////////////////////////////////
 
-// Command transaction constructor
- 
-    function new(string name = "");
-        super.new(name);
-    endfunction : new
-    
-    
-// Command transaction functions
-    
     function void do_copy(uvm_object rhs);
         Random_command copied_command_h;
        
@@ -123,5 +110,13 @@ class Random_command extends uvm_transaction;
                 A, B, OP, ERROR, RST, EXP_RESULT.data, EXP_RESULT.flags);
         return s;
     endfunction : convert2string
+
+////////////////////////////////////////
+// Random command constructor
+////////////////////////////////////////
+
+    function new(string name = "");
+        super.new(name);
+    endfunction : new
     
 endclass : Random_command

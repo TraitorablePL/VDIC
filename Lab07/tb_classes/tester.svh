@@ -1,16 +1,16 @@
 class Tester extends uvm_component;
 	
     `uvm_component_utils(Tester)
-    
+
+////////////////////////////////////////
+// Tester variables
+////////////////////////////////////////
+
 	uvm_put_port #(Random_command) command_port;
-	
-/**
- * Tester tasks and functions
- */
- 
-	function new(string name, uvm_component parent);
-		super.new(name, parent);
-	endfunction : new
+
+////////////////////////////////////////
+// Tester tasks and functions
+////////////////////////////////////////
 	
 	function void build_phase(uvm_phase phase);
 		command_port = new("command_port", this);
@@ -40,5 +40,13 @@ class Tester extends uvm_component;
 		phase.drop_objection(this);
 		
 	endtask : run_phase
+
+////////////////////////////////////////
+// Tester constructor
+////////////////////////////////////////
+	 
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction : new
 	
 endclass : Tester

@@ -1,24 +1,18 @@
-/******************************************************************************
-* Created by dstankiewicz on Nov 7, 2021
-*******************************************************************************/
-
 module top;
 	
     import uvm_pkg::*;
     `include "uvm_macros.svh"
     import alu_pkg::*;
     
-    
-    /**
-     * Interfaces instantiation
-     */ 
-     
+////////////////////////////////////////
+// Interfaces instantiation
+////////////////////////////////////////
+
     alu_bfm bfm();
     	
-    	
-    /**
-     * Submodules placement
-     */
+////////////////////////////////////////
+// Submodules placement
+////////////////////////////////////////
      
     mtm_Alu mtm_Alu(
     	.clk(bfm.clk),

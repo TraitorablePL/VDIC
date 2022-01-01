@@ -1,18 +1,17 @@
 class Result_monitor extends uvm_component;
 	
 	`uvm_component_utils(Result_monitor)
-	
+
+////////////////////////////////////////
+// Result monitor variables
+////////////////////////////////////////
+
 	uvm_analysis_port #(Result_transaction) ap;
 	
-	
-/**
- * Result_monitor tasks and functions
- */
+////////////////////////////////////////
+// Random monitor tasks and functions
+////////////////////////////////////////
 
-	function new(string name, uvm_component parent);
-		super.new(name, parent);
-	endfunction : new
-	
 	function void build_phase(uvm_phase phase);
 		virtual alu_bfm bfm;
 		
@@ -29,5 +28,13 @@ class Result_monitor extends uvm_component;
         res_action.ALU_RESULT = result;
 		ap.write(res_action);
 	endfunction : write_to_monitor
+
+////////////////////////////////////////
+// Random monitor constructor
+////////////////////////////////////////
+
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction : new
 	
 endclass : Result_monitor

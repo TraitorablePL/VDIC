@@ -2,17 +2,16 @@ class Driver extends uvm_component;
 	
 	`uvm_component_utils(Driver)
 
+////////////////////////////////////////
+// Driver variables
+////////////////////////////////////////
+
 	virtual alu_bfm bfm;
 	uvm_get_port #(Random_command) command_port;
 	
-	
-/**
- * Driver tasks and functions
- */
-	
-	function new(string name, uvm_component parent);
-		super.new(name, parent);
-	endfunction : new
+////////////////////////////////////////
+// Driver tasks and functions
+////////////////////////////////////////
 	
 	function void build_phase(uvm_phase phase);
 		if(!uvm_config_db #(virtual alu_bfm)::get(null, "*", "bfm", bfm))
@@ -28,5 +27,13 @@ class Driver extends uvm_component;
 			bfm.op(cmd.A, cmd.B, cmd.OP, cmd.ERROR, cmd.RST);
 		end : command_loop
 	endtask : run_phase
+
+////////////////////////////////////////
+// Driver constructor
+////////////////////////////////////////
+
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction : new
 
 endclass : Driver

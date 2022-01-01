@@ -3,7 +3,11 @@
 package alu_pkg;
 	import uvm_pkg::*;
     `include "uvm_macros.svh"
-	
+
+////////////////////////////////////////
+// ALU data types
+////////////////////////////////////////
+
 	typedef enum bit {DATA, CTL} cmd_t;
 	
 	typedef enum bit [2:0] {
@@ -47,6 +51,9 @@ package alu_pkg;
 		exp_result_t EXP_RESULT;
 	} cmd_pack_t;
 
+////////////////////////////////////////
+// ALU includes
+////////////////////////////////////////
 
 `include "random_command.svh"
 `include "extreme_val_command.svh"
@@ -59,6 +66,11 @@ package alu_pkg;
 `include "command_monitor.svh"
 `include "result_monitor.svh"
 `include "env.svh"
+
+////////////////////////////////////////
+// ALU test includes
+////////////////////////////////////////
+
 `include "random_test.svh"
 `include "extreme_val_test.svh"
 

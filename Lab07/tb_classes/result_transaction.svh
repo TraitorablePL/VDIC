@@ -2,24 +2,15 @@ class Result_transaction extends uvm_transaction;
     
     `uvm_object_utils(Result_transaction)
     
-    
-// Transaction variables
+////////////////////////////////////////
+// Result transaction variables
+////////////////////////////////////////
 
     rand alu_result_t ALU_RESULT;
     
-
-// Constraints
-
-    //TODO
-        
-// Command transaction constructor
- 
-    function new(string name = "");
-        super.new(name);
-    endfunction : new
-    
-    
-// Command transaction functions
+////////////////////////////////////////
+// Result transaction tasks and functions
+////////////////////////////////////////
     
     function void do_copy(uvm_object rhs);
         Result_transaction copied_transaction_h;
@@ -68,5 +59,13 @@ class Result_transaction extends uvm_transaction;
                 ALU_RESULT.data, ALU_RESULT.flags);
         return s;
     endfunction : convert2string
+
+////////////////////////////////////////
+// Result transaction constructor
+////////////////////////////////////////
+ 
+    function new(string name = "");
+        super.new(name);
+    endfunction : new
     
 endclass : Result_transaction

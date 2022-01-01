@@ -1,17 +1,16 @@
 class Command_monitor extends uvm_component;
 	
 	`uvm_component_utils(Command_monitor)
-	
-	uvm_analysis_port #(Random_command) ap;
-	
-	
-/**
- * Command_monitor tasks and functions
- */
 
-	function new(string name, uvm_component parent);
-		super.new(name, parent);
-	endfunction : new
+////////////////////////////////////////
+// Command monitor variables
+////////////////////////////////////////
+
+	uvm_analysis_port #(Random_command) ap;
+
+////////////////////////////////////////	
+// Command monitor tasks and functions
+////////////////////////////////////////
 	
 	function void build_phase(uvm_phase phase);
 		virtual alu_bfm bfm;
@@ -34,5 +33,13 @@ class Command_monitor extends uvm_component;
         rand_cmd.EXP_RESULT = cmd.EXP_RESULT;
 		ap.write(rand_cmd);
 	endfunction : write_to_monitor
+
+////////////////////////////////////////
+// Command monitor contructor
+////////////////////////////////////////
+
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction : new
 	
 endclass : Command_monitor

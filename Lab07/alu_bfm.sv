@@ -4,22 +4,38 @@ interface alu_bfm;
 	
 import alu_pkg::*;
 
-// Global signals
+////////////////////////////////////////
+// ALU BFM global signals
+////////////////////////////////////////
+
 bit clk;
 bit rst_n;
 
-// Interface data
+////////////////////////////////////////
+// ALU BFM interface data
+////////////////////////////////////////
+
 bit DONE = 0;
 alu_result_t ALU_RESULT;
 cmd_pack_t CMD_PACK;
-	
-// ALU serial data
+
+////////////////////////////////////////
+// ALU BFM serial data
+////////////////////////////////////////
+
 bit sin;
 bit sout;
 
-/**
- * CRC Tasks and function definitions
- */
+////////////////////////////////////////
+// ALU BFM monitors
+////////////////////////////////////////
+
+Command_monitor command_monitor_h;
+Result_monitor result_monitor_h;
+
+////////////////////////////////////////
+// CRC tasks and functions
+////////////////////////////////////////
 
 function bit [3:0] _crc4(input bit [67:0] D);
 	
@@ -40,33 +56,32 @@ function bit [3:0] _crc3(input bit [36:0] D);
 	return crc;
 endfunction
 
-
-/**
- * Internal ALU tasks and functions
- */
+////////////////////////////////////////
+// Internal ALU BFM tasks and functions
+////////////////////////////////////////
 
 task _tx_byte(
 	input bit [7:0] data, 
 	input cmd_t tx_type);
 
-	/* START bit */
+	// START bit
 	@(negedge clk);
 	sin = 1'b0;
 	
-	/* TYPE bit */
+	// TYPE bit
 	@(negedge clk);  
 	if(tx_type)
 		sin = 1'b1;
 	else
 		sin = 1'b0;
 	
-	/* DATA bits */
+	// DATA bits
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
 		sin = data[i];
 	end
 	
-	/* STOP bit */
+	// STOP bit
 	@(negedge clk);
 	sin = 1'b1;
 endtask
@@ -75,20 +90,20 @@ task _rx_byte(
 	output bit [7:0] data, 
 	output cmd_t rx_type);
 	
-	/* START and TYPE bits */
+	// START and TYPE bits
 	repeat (2) @(negedge clk);
 	if(sout)
 		rx_type = CTL;
 	else
 		rx_type = DATA;
 	
-	/* DATA bits */
+	// DATA bits
 	for(int i = 7;i >= 0; i--) begin
 		@(negedge clk);
 		data[i] = sout;
 	end
 	
-	/* STOP bit */
+	// STOP bit
 	@(negedge clk);
 endtask
 
@@ -205,10 +220,9 @@ function exp_result_t _exp_result(
 	return result;
 endfunction
 
-
-/**
- * ALU external tasks and functions
- */
+////////////////////////////////////////
+// ALU BFM external tasks and functions
+////////////////////////////////////////
 
 task rst();
 	sin = 1'b1;
@@ -242,11 +256,9 @@ task op(
 endtask
 
 
-/**
- * Command monitor
- */
-
-Command_monitor command_monitor_h;
+////////////////////////////////////////
+// Command monitor thread
+////////////////////////////////////////
 
 initial begin : cmd_monitor_thread
 	forever begin	
@@ -255,12 +267,9 @@ initial begin : cmd_monitor_thread
 	end	
 end : cmd_monitor_thread
 
-
-/**
- * Result monitor
- */
-
-Result_monitor result_monitor_h;
+////////////////////////////////////////
+// Result monitor thread
+////////////////////////////////////////
 
 initial begin : result_monitor_thread
 	forever begin
@@ -270,14 +279,12 @@ initial begin : result_monitor_thread
 	end
 end : result_monitor_thread
 
-
-/**
- * Clock generation
- */
+////////////////////////////////////////
+// Clock generator
+////////////////////////////////////////
  
 initial begin
 	clk = 1'b1;
-	
 	forever
 		clk = #2.5 ~clk;
 end

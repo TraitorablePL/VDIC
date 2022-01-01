@@ -1,6 +1,10 @@
 class Coverage extends uvm_subscriber #(Random_command);
 	
 	`uvm_component_utils(Coverage)
+
+////////////////////////////////////////
+// Coverage variables
+////////////////////////////////////////
 	
 	bit [31:0] A;
 	bit [31:0] B;
@@ -9,9 +13,9 @@ class Coverage extends uvm_subscriber #(Random_command);
 	bit RST;
 	exp_result_t EXP_RESULT;
 	
-/**
- * Coverage
- */
+////////////////////////////////////////
+// Coverage groups
+////////////////////////////////////////
  
 	covergroup op_cov;
 		
@@ -144,18 +148,11 @@ class Coverage extends uvm_subscriber #(Random_command);
 	        	binsof(a_arg.others) && binsof(b_arg.others);
 	    }
 	endgroup
-	
 
-/**
- * Coverage tasks and functions
- */
-	
-	function new (string name, uvm_component parent);
-		super.new(name, parent);
-		op_cov = new();
-	    extreme_val_on_ops = new();
-	endfunction : new
-	
+////////////////////////////////////////
+// Coverage tasks and functions
+////////////////////////////////////////
+
 	function void write(Random_command t);
 		A = t.A;
 		B = t.B;
@@ -167,5 +164,15 @@ class Coverage extends uvm_subscriber #(Random_command);
 		op_cov.sample();
 		extreme_val_on_ops.sample();
 	endfunction : write
+
+////////////////////////////////////////
+// Coverage constructor
+////////////////////////////////////////
+
+	function new (string name, uvm_component parent);
+		super.new(name, parent);
+		op_cov = new();
+	    extreme_val_on_ops = new();
+	endfunction : new
 	
 endclass : Coverage

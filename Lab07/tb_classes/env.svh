@@ -1,7 +1,11 @@
 class Env extends uvm_env;
 	
 	`uvm_component_utils(Env)
-	
+
+////////////////////////////////////////
+// Env variables
+////////////////////////////////////////
+
 	Tester tester_h;
 	Coverage coverage_h;
 	Scoreboard scoreboard_h;
@@ -10,15 +14,9 @@ class Env extends uvm_env;
 	Result_monitor result_monitor_h;
     uvm_tlm_fifo #(Random_command) cmd_f;
 	
-	
-/**
- * Env tasks and functions
- */
-	
-	function new(string name, uvm_component parent);
-		super.new(name, parent);
-	endfunction : new
-	
+////////////////////////////////////////
+// Env tasks and functions
+////////////////////////////////////////
     
 	function void build_phase(uvm_phase phase);
 		cmd_f = new("cmd_f", this);
@@ -38,5 +36,13 @@ class Env extends uvm_env;
 		command_monitor_h.ap.connect(scoreboard_h.cmd_f.analysis_export);
         result_monitor_h.ap.connect(scoreboard_h.analysis_export);
 	endfunction : connect_phase
+
+////////////////////////////////////////
+// Env constructor
+////////////////////////////////////////
+		
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction : new
 		
 endclass : Env
