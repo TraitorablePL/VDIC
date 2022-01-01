@@ -2,7 +2,7 @@ class Command_monitor extends uvm_component;
 	
 	`uvm_component_utils(Command_monitor)
 	
-	uvm_analysis_port #(cmd_pack_t) ap;
+	uvm_analysis_port #(Random_command) ap;
 	
 	
 /**
@@ -24,7 +24,15 @@ class Command_monitor extends uvm_component;
 	endfunction : build_phase
 	
 	function void write_to_monitor(cmd_pack_t cmd);
-		ap.write(cmd);
+        Random_command rand_cmd;
+        rand_cmd = new("rand_cmd");
+        rand_cmd.A = cmd.A;
+        rand_cmd.B = cmd.B;
+        rand_cmd.OP = cmd.OP;
+        rand_cmd.ERROR = cmd.ERROR;
+        rand_cmd.RST = cmd.RST;
+        rand_cmd.EXP_RESULT = cmd.EXP_RESULT;
+		ap.write(rand_cmd);
 	endfunction : write_to_monitor
 	
 endclass : Command_monitor

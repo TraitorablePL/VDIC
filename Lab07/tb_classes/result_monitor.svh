@@ -2,7 +2,7 @@ class Result_monitor extends uvm_component;
 	
 	`uvm_component_utils(Result_monitor)
 	
-	uvm_analysis_port #(alu_result_t) ap;
+	uvm_analysis_port #(Result_transaction) ap;
 	
 	
 /**
@@ -24,7 +24,10 @@ class Result_monitor extends uvm_component;
 	endfunction : build_phase
 	
 	function void write_to_monitor(alu_result_t result);
-		ap.write(result);
+        Result_transaction res_action;
+        res_action = new("res_action");
+        res_action.ALU_RESULT = result;
+		ap.write(res_action);
 	endfunction : write_to_monitor
 	
 endclass : Result_monitor

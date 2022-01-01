@@ -31,7 +31,7 @@ class Tester extends uvm_component;
         
         cmd = Random_command::type_id::create("command");
 		
-		repeat (20) begin : tester_loop
+		repeat (10000) begin : tester_loop
 			assert(cmd.randomize());
 			command_port.put(cmd);
 		end : tester_loop

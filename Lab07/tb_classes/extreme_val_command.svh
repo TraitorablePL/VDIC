@@ -5,7 +5,10 @@ class Extreme_val_command extends Random_command;
 
 // Constraints
 
-    //TODO
+    constraint extreme_val_data {
+        A dist {32'h00000000 := 1, 32'hFFFFFFFF := 1, 32'h80000000 := 1, 32'h7FFFFFFF := 1};
+        B dist {32'h00000000 := 1, 32'hFFFFFFFF := 1, 32'h80000000 := 1, 32'h7FFFFFFF := 1};
+    }
         
 // Command transaction constructor
  
