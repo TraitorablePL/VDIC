@@ -1,66 +1,108 @@
 class Scoreboard extends uvm_subscriber #(Result_transaction);
 	
 	`uvm_component_utils(Scoreboard)
+    
+////////////////////////////////////////
+// Scoreboard typedefs
+////////////////////////////////////////
+
+    typedef enum bit {
+        TEST_PASSED,
+        TEST_FAILED
+    } test_result_t;
 
 ////////////////////////////////////////
 // Scoreboard variables
 ////////////////////////////////////////
 
-	virtual alu_bfm bfm;
+	protected virtual alu_bfm bfm;
 	uvm_tlm_analysis_fifo #(Random_command) cmd_f;
+    protected test_result_t tr = TEST_PASSED;
 
 ////////////////////////////////////////
 // Scoreboard tasks and functions
 ////////////////////////////////////////
 	
-	function void build_phase(uvm_phase phase);
-		cmd_f = new("cmd_f", this);
-	endfunction : build_phase
-
-	protected function bit verify_result(cmd_pack_t CMD_PACK, alu_result_t ALU_RESULT);
-		if((ALU_RESULT.data == CMD_PACK.EXP_RESULT.data && ALU_RESULT.flags[3:0] == CMD_PACK.EXP_RESULT.flags) || 
-			(ALU_RESULT.flags[5:3] == CMD_PACK.ERROR && CMD_PACK.ERROR != alu_pkg::F_ERRNONE))
-			return 1'b0;
-		else
-			return 1'b1;
-	endfunction : verify_result
-
+    protected function void print_test_result(test_result_t r);
+        if(tr == TEST_PASSED) begin
+            set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+            $write(" __________________________\n");
+            $write("|                          |\n");
+            $write("| TEST SUCCESSFULLY PASSED |\n");
+            $write("|__________________________|\n");
+            set_print_color(COLOR_DEFAULT);
+            $write("\n");
+        end
+        else begin
+            set_print_color(COLOR_BOLD_BLACK_ON_RED);
+            $write(" __________________________\n");
+            $write("|                          |\n");
+            $write("| TEST SUCCESSFULLY FAILED |\n");
+            $write("|__________________________|\n");
+            set_print_color(COLOR_DEFAULT);
+        end
+    endfunction
+    
+    protected function Result_transaction predict_result(Random_command cmd);
+        Result_transaction predicted;
+        
+        predicted = new("predicted");
+        
+        if(cmd.ERROR == F_ERRNONE)
+            predicted.ALU_RESULT.data = cmd.EXP_RESULT.data;
+        else
+            predicted.ALU_RESULT.data = '0;
+            
+        case(cmd.ERROR) 
+            F_ERRNONE : predicted.ALU_RESULT.flags = {2'b00, cmd.EXP_RESULT.flags};
+            F_ERROP : predicted.ALU_RESULT.flags = {F_ERROP, F_ERROP};
+            F_ERRCRC : predicted.ALU_RESULT.flags = {F_ERRCRC, F_ERRCRC};
+            F_ERRDATA : predicted.ALU_RESULT.flags = {F_ERRDATA, F_ERRDATA};
+        endcase
+            
+        return predicted;
+    endfunction : predict_result
+    
 	function void write(Result_transaction t);
 		Random_command cmd;
-       	cmd_pack_t cmd_data;
-		
+        Result_transaction predicted;
+        string info;
+        
        	if(!cmd_f.try_get(cmd))
            	$fatal(1, "Missing command in self checker");
-       
-		cmd_data.A = cmd.A;
-		cmd_data.B = cmd.B;
-		cmd_data.OP = cmd.OP;
-		cmd_data.RST = cmd.RST;
-		cmd_data.ERROR = cmd.ERROR;
-		cmd_data.EXP_RESULT.data = cmd.EXP_RESULT.data;
-		cmd_data.EXP_RESULT.flags = cmd.EXP_RESULT.flags;
-		
-		assert(1'b0 == verify_result(cmd_data, t.ALU_RESULT)) begin
-`ifdef DEBUG
-			$display("\nTEST PASSED");
-`endif
-		end 
-		else begin 
-`ifdef DEBUG
-			$warning("\nTEST FAILED");
-`endif
-		end
-`ifdef DEBUG
-		$display("|         OP: %03b", cmd.OP);
-		$display("|          B: 0x%08h", cmd.B);
-		$display("|          A: 0x%08h", cmd.A);
-		$display("|          C: 0x%08h", t.ALU_RESULT.data);
-		$display("|      FLAGS: %06b", t.ALU_RESULT.flags);
-		$display("|      EXP_C: 0x%08h", cmd.EXP_RESULT.data);
-		$display("|  EXP_FLAGS: %04b", cmd.EXP_RESULT.flags);
-`endif
-	endfunction : write
+        
+        predicted = predict_result(cmd);
 
+        info = {"Transaction command: \n", cmd.convert2string(),
+            "\nTransaction result: \n", t.convert2string(),
+            "\nExpected result: \n", predicted.convert2string(), "\n"};
+        
+        if(!predicted.compare(t)) begin
+            `uvm_error("SELF_CHECKER", {"FAIL: \n", info})
+            tr = TEST_FAILED;
+        end
+        else
+            `uvm_info("SELF_CHECKER", {"PASS: \n", info}, UVM_HIGH)
+       
+    endfunction : write
+
+////////////////////////////////////////
+// Scoreboard report phase
+////////////////////////////////////////
+
+    function void report_phase(uvm_phase phase);
+        super.report_phase(phase);
+        print_test_result(tr);
+    endfunction : report_phase
+
+////////////////////////////////////////
+// Scoreboard build phase
+////////////////////////////////////////
+    
+    function void build_phase(uvm_phase phase);
+        cmd_f = new("cmd_f", this);
+    endfunction : build_phase
+    
 ////////////////////////////////////////
 // Scoreboard constructor
 ////////////////////////////////////////

@@ -9,17 +9,21 @@ class Random_test extends uvm_test;
 	Env env_h;
 
 ////////////////////////////////////////
-// Random test tasks and functions
+// Random test simulation phase
 ////////////////////////////////////////
 
-	function void build_phase(uvm_phase phase);
-		env_h = Env::type_id::create("env_h", this);
-	endfunction : build_phase
-	
 	virtual function void start_of_simulation_phase(uvm_phase phase);
 		super.start_of_simulation_phase(phase);
 		uvm_top.print_topology();
-	endfunction : start_of_simulation_phase
+    endfunction : start_of_simulation_phase
+    
+////////////////////////////////////////
+// Random command build phase
+////////////////////////////////////////
+
+    function void build_phase(uvm_phase phase);
+        env_h = Env::type_id::create("env_h", this);
+    endfunction : build_phase
 
 ////////////////////////////////////////
 // Random command constructor

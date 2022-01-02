@@ -3,7 +3,7 @@ class Extreme_val_test extends Random_test;
 	`uvm_component_utils(Extreme_val_test)
 	
 ////////////////////////////////////////
-// Extreme val test tasks and functions
+// Extreme val test build phase
 ////////////////////////////////////////
 
 	function void build_phase(uvm_phase phase);

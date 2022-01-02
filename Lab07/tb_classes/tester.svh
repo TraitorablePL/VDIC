@@ -9,12 +9,8 @@ class Tester extends uvm_component;
 	uvm_put_port #(Random_command) command_port;
 
 ////////////////////////////////////////
-// Tester tasks and functions
+// Tester run phase
 ////////////////////////////////////////
-	
-	function void build_phase(uvm_phase phase);
-		command_port = new("command_port", this);
-	endfunction : build_phase
 	
 	task run_phase(uvm_phase phase);
 		Random_command cmd;
@@ -39,7 +35,15 @@ class Tester extends uvm_component;
 		#500;  
 		phase.drop_objection(this);
 		
-	endtask : run_phase
+    endtask : run_phase
+
+////////////////////////////////////////
+// Tester build phase
+////////////////////////////////////////
+
+    function void build_phase(uvm_phase phase);
+        command_port = new("command_port", this);
+    endfunction : build_phase
 
 ////////////////////////////////////////
 // Tester constructor

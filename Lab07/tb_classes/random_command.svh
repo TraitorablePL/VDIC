@@ -58,7 +58,6 @@ class Random_command extends uvm_transaction;
     endfunction : clone_me
    
     function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-       
         Random_command compared_command_h;
         bit same;
        
@@ -75,15 +74,13 @@ class Random_command extends uvm_transaction;
             (compared_command_h.ERROR == ERROR) &&
             (compared_command_h.RST == RST) &&
             (compared_command_h.EXP_RESULT == EXP_RESULT);
-           
+        
+        return same;
     endfunction : do_compare
     
     function string convert2string();
         string s;
-        s = $sformatf("\nA: 0x%08h \nB: 0x%08h \nOP: %03b \
-                \nERROR: %01b \nRST: %01b \
-                \nEXP_DATA: 0x%08h \nEXP_FLAGS: %04b", 
-                A, B, OP, ERROR, RST, EXP_RESULT.data, EXP_RESULT.flags);
+        s = $sformatf("A: 0x%08h, B: 0x%08h, OP: %03b, ERROR: %03b, RST: %01b", A, B, OP, ERROR, RST);
         return s;
     endfunction : convert2string
 

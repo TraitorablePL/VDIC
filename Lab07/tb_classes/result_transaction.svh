@@ -38,7 +38,6 @@ class Result_transaction extends uvm_transaction;
     endfunction : clone_me
    
     function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-       
         Result_transaction compared_transaction_h;
         bit same;
        
@@ -50,13 +49,13 @@ class Result_transaction extends uvm_transaction;
         else
             same = super.do_compare(rhs, comparer) &&
             (compared_transaction_h.ALU_RESULT == ALU_RESULT);
-           
+        
+        return same;
     endfunction : do_compare
     
     function string convert2string();
         string s;
-        s = $sformatf("\nC: 0x%08h \nFLAGS: %04b", 
-                ALU_RESULT.data, ALU_RESULT.flags);
+        s = $sformatf("C: 0x%08h, FLAGS: %06b", ALU_RESULT.data, ALU_RESULT.flags);
         return s;
     endfunction : convert2string
 
