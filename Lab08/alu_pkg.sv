@@ -85,6 +85,9 @@ endfunction
 // ALU includes
 ////////////////////////////////////////
 
+`include "env_config.svh"
+`include "alu_agent_config.svh"
+
 `include "random_command.svh"
 `include "extreme_val_command.svh"
 `include "result_transaction.svh"
@@ -95,13 +98,13 @@ endfunction
 `include "driver.svh"
 `include "command_monitor.svh"
 `include "result_monitor.svh"
+`include "alu_agent.svh"
 `include "env.svh"
 
 ////////////////////////////////////////
 // ALU test includes
 ////////////////////////////////////////
 
-`include "random_test.svh"
-`include "extreme_val_test.svh"
+`include "dual_test.svh"
 
 endpackage : alu_pkg

@@ -14,6 +14,8 @@ class Command_monitor extends uvm_component;
 	
 	function void write_to_monitor(cmd_pack_t cmd);
         Random_command rand_cmd;
+        `uvm_info("COMMAND MONITOR", $sformatf("MONITOR: A: 0x%08h, B: 0x%08h\n OP: %03b, ERROR: %03b, RST: %01b", 
+            cmd.A, cmd.B, cmd.OP, cmd.ERROR, cmd.RST), UVM_HIGH);
         rand_cmd = new("rand_cmd");
         rand_cmd.A = cmd.A;
         rand_cmd.B = cmd.B;
@@ -29,12 +31,12 @@ class Command_monitor extends uvm_component;
 ////////////////////////////////////////
 
     function void build_phase(uvm_phase phase);
-        virtual alu_bfm bfm;
+        Alu_agent_config alu_agent_config_h;
         
-        if(!uvm_config_db #(virtual alu_bfm)::get(null, "*", "bfm", bfm))
-            $fatal(1, "Failed to get BFM");
+        if(!uvm_config_db #(Alu_agent_config)::get(this, "", "config", alu_agent_config_h))
+            `uvm_fatal("COMMAND MONITOR", "Failed to get CONFIG");
         
-        bfm.command_monitor_h = this;
+        alu_agent_config_h.bfm.command_monitor_h = this;
         ap = new("ap", this);
     endfunction : build_phase
 

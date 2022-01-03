@@ -6,38 +6,30 @@ class Env extends uvm_env;
 // Env variables
 ////////////////////////////////////////
 
-	Tester tester_h;
-	Coverage coverage_h;
-	Scoreboard scoreboard_h;
-    Driver driver_h;
-	Command_monitor command_monitor_h;
-	Result_monitor result_monitor_h;
-    uvm_tlm_fifo #(Random_command) cmd_f;
+    Alu_agent class_alu_agent_h;
+    Alu_agent module_alu_agent_h;
 	
-////////////////////////////////////////
-// Env connect phase
-////////////////////////////////////////
-
-	function void connect_phase(uvm_phase phase);
-		driver_h.command_port.connect(cmd_f.get_export);
-		tester_h.command_port.connect(cmd_f.put_export);
-        command_monitor_h.ap.connect(coverage_h.analysis_export);
-		command_monitor_h.ap.connect(scoreboard_h.cmd_f.analysis_export);
-        result_monitor_h.ap.connect(scoreboard_h.analysis_export);
-    endfunction : connect_phase
-
 ////////////////////////////////////////
 // Env build phase
 ////////////////////////////////////////
 
     function void build_phase(uvm_phase phase);
-        cmd_f = new("cmd_f", this);
-        tester_h = Tester::type_id::create("tester_h", this);
-        driver_h = Driver::type_id::create("driver_h", this);
-        coverage_h = Coverage::type_id::create("coverage_h", this);
-        scoreboard_h = Scoreboard::type_id::create("scoreboard_h", this);
-        command_monitor_h = Command_monitor::type_id::create("command_monitor_h", this);
-        result_monitor_h = Result_monitor::type_id::create("result_monitor_h", this);
+        
+        Env_config env_config_h;
+        Alu_agent_config class_config_h;
+        Alu_agent_config module_config_h;
+        
+        if(!uvm_config_db #(Env_config)::get(this, "", "config", env_config_h))
+            `uvm_fatal("ENV", "Failed to get config object");
+        
+        class_config_h = new(.bfm(env_config_h.class_bfm), .is_active(UVM_ACTIVE));
+        module_config_h = new(.bfm(env_config_h.module_bfm), .is_active(UVM_PASSIVE));
+        
+        uvm_config_db #(Alu_agent_config)::set(this, "class_alu_agent_h*", "config", class_config_h);
+        uvm_config_db #(Alu_agent_config)::set(this, "module_alu_agent_h*", "config", module_config_h);
+        
+        class_alu_agent_h = Alu_agent::type_id::create("class_alu_agent_h", this);
+        module_alu_agent_h = Alu_agent::type_id::create("module_alu_agent_h", this);
     endfunction : build_phase
 
 ////////////////////////////////////////
