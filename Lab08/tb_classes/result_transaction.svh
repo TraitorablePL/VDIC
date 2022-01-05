@@ -1,7 +1,5 @@
 class Result_transaction extends uvm_transaction;
     
-    `uvm_object_utils(Result_transaction)
-    
 ////////////////////////////////////////
 // Result transaction variables
 ////////////////////////////////////////

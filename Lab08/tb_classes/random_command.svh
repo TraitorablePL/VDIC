@@ -18,8 +18,20 @@ class Random_command extends uvm_transaction;
 ////////////////////////////////////////
 
     constraint random_data {
-        OP dist {AND_OP := 1, OR_OP := 1, ADD_OP := 1, SUB_OP := 1};
-        RST dist {1'b0 :/ 60, 1'b1 :/ 40};
+        A dist {
+            [32'h00000001 : 32'hFFFFFFFE] :/ 1,
+            32'h00000000 :/ 1,
+            32'hFFFFFFFF :/ 1,
+            32'h80000000 :/ 1,
+            32'h7FFFFFFF :/ 1};
+        B dist {
+            [32'h00000001 : 32'hFFFFFFFE] :/ 1,
+            32'h00000000 :/ 1,
+            32'hFFFFFFFF :/ 1,
+            32'h80000000 :/ 1,
+            32'h7FFFFFFF :/ 1};
+        OP dist {AND_OP :/ 1, OR_OP :/ 1, ADD_OP :/ 1, SUB_OP :/ 1};
+        RST dist {1'b0 :/ 80, 1'b1 :/ 20};
         ERROR dist {F_ERRNONE :/ 70, F_ERRCRC :/ 10, F_ERRDATA :/ 10, F_ERROP :/ 10};
     }
 
@@ -80,7 +92,8 @@ class Random_command extends uvm_transaction;
     
     function string convert2string();
         string s;
-        s = $sformatf("A: 0x%08h, B: 0x%08h, OP: %03b, ERROR: %03b, RST: %01b", A, B, OP, ERROR, RST);
+        s = $sformatf("\nA: 0x%08h, B: 0x%08h, OP: %03b, ERROR: %03b, RST: %01b C: 0x%08h FLAGS: %04b\n", 
+                A, B, OP, ERROR, RST, EXP_RESULT.data, EXP_RESULT.flags);
         return s;
     endfunction : convert2string
 
